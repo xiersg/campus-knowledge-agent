@@ -4,7 +4,7 @@
 
 作业说明：<https://edu.cnblogs.com/campus/gdgy/Class56-Grade2024-CS/homework/16760>
 
-试用地址（珠宝项目的国内测试机）：<http://8.134.98.200:443/>
+试用地址（珠宝项目的国内测试机）：<http://8.134.98.200:8088/campus/>
 
 ## 能做什么
 
@@ -103,6 +103,6 @@ deploy/                        测试机 systemd 单元
 
 ## 测试机部署
 
-国内测试机 `8.134.98.200` 上，服务以系统用户 `campusagent` 跑在 `/opt/campus-knowledge-agent`，监听 `0.0.0.0:443`。systemd 已设为开机自启，数据库留在该目录的 `data/`。安全组未放行 8765，443 当前空闲且外网可连，所以试用地址是 <http://8.134.98.200:443/>。这里是明文 HTTP，不是 HTTPS。单元文件是 `deploy/campus-knowledge-agent.service`。它不进入珠宝项目的容器或 Jenkins。
+国内测试机 `8.134.98.200` 上，服务以系统用户 `campusagent` 跑在 `/opt/campus-knowledge-agent`，只监听 `8765` 给本机和 Nginx 使用，并设为开机自启。公网请打开 <http://8.134.98.200:8088/campus/>。不要用 443：浏览器会把它当成 HTTPS，而这个程序提供的是普通网页。数据库留在该目录的 `data/`。服务器上没有本机浏览器，请点「载入示例课表」，或粘贴教务 Cookie。单元文件是 `deploy/campus-knowledge-agent.service`，转发片段是 `deploy/nginx-campus.location`。它不进入珠宝项目的容器或 Jenkins。
 
 服务器上的 `.env` 单独放置，不进 Git。浏览器自动打开教务登录窗口只在本机可用。
