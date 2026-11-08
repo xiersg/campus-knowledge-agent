@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>答辩 · 校园知识咨询 —— 杨富林与黎正阳的团队</title>
+<style>
+  :root {
+    --blue: #1d4e89;
+    --light: #4d92f0;
+    --sky: #e7f3ff;
+    --text: #16324d;
+    --muted: #6d8eae;
+    --card: rgba(255, 255, 255, .85);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font: 16px/1.6 "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(165deg, #f7fbff 0%, #e7f3ff 46%, #d6ebff 100%);
+    color: var(--text);
+    overflow: hidden;
+  }
+  #progress { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, #8ec8ff, #4d92f0); width: 0; transition: width .25s; z-index: 99; }
+  .slide { position: absolute; inset: 0; display: none; padding: 48px 64px 72px; flex-direction: column; }
+  .slide.active { display: flex; animation: fade .3s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .kicker { color: var(--light); font-size: 14px; letter-spacing: .2em; font-weight: 700; margin-bottom: 6px; }
+  h1 { color: var(--blue); font-size: 44px; line-height: 1.25; margin-bottom: 14px; }
+  h2 { color: var(--blue); font-size: 30px; margin-bottom: 18px; }
+  h3 { color: var(--blue); font-size: 20px; margin: 10px 0 6px; }
+  p, li { color: var(--text); }
+  ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  .time { position: absolute; right: 20px; top: 16px; background: rgba(77, 146, 240, .12); color: var(--blue); font-size: 12px; padding: 3px 10px; border-radius: 999px; font-weight: 700; }
+  .page { position: fixed; bottom: 14px; right: 24px; color: var(--muted); font-size: 13px; z-index: 99; }
+  .footer { position: fixed; bottom: 14px; left: 24px; color: var(--muted); font-size: 12px; z-index: 99; letter-spacing: .05em; }
+  .nav { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 99; }
+  .nav button { background: rgba(255,255,255,.9); border: 1px solid rgba(140, 200, 255, .8); color: var(--blue); border-radius: 999px; padding: 6px 16px; cursor: pointer; font-size: 14px; font-weight: 700; }
+  .nav button:hover { background: var(--light); color: #fff; }
+
+  /* 封面 */
+  .cover { justify-content: center; align-items: center; text-align: center; }
+  .cover .logo { width: 132px; height: 132px; margin-bottom: 22px; }
+  .cover h1 { font-size: 52px; }
+  .cover .sub { font-size: 22px; color: var(--muted); margin: 6px 0 26px; letter-spacing: .06em; }
+  .cover .team { font-size: 18px; color: var(--blue); font-weight: 700; }
+  .cover .meta { margin-top: 12px; color: var(--muted); font-size: 15px; }
+
+  /* 团队 */
+  .cards { display: flex; gap: 24px; margin-top: 10px; }
+  .member { flex: 1; background: var(--card); border: 1px solid rgba(255,255,255,.95); border-radius: 16px; padding: 22px; box-shadow: 0 12px 28px rgba(80,140,200,.14); }
+  .member .avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(180deg, #8ec8ff, #4d92f0); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; margin: 0 auto 12px; }
+  .member .name { text-align: center; color: var(--blue); font-size: 20px; font-weight: 700; }
+  .member .no { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  .member table { width: 100%; font-size: 14px; border-collapse: collapse; }
+  .member td { padding: 4px 6px; border-bottom: 1px dashed rgba(180,210,235,.6); vertical-align: top; }
+  .member td:first-child { color: var(--muted); width: 74px; white-space: nowrap; }
+  .photo-note { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+  /* 痛点 */
+  .pain { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+  .pain .p { flex: 1 1 210px; background: var(--card); border-radius: 14px; padding: 16px; border: 1px solid rgba(255,255,255,.95); box-shadow: 0 10px 24px rgba(80,140,200,.12); }
+  .pain .p b { color: var(--blue); display: block; margin-bottom: 6px; font-size: 17px; }
+  .survey { margin-top: 16px; background: linear-gradient(90deg, rgba(142,200,255,.28), rgba(77,146,240,.14)); border-radius: 14px; padding: 14px 20px; font-size: 15px; }
+
+  /* 功能总览 chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .chip { background: var(--card); border: 1px solid rgba(126,186,242,.7); color: var(--blue); border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 15px; box-shadow: 0 6px 16px rgba(80,140,200,.10); }
+  .chip em { font-style: normal; background: linear-gradient(180deg,#7eb6ff,#4d8ef0); color: #fff; border-radius: 999px; padding: 1px 8px; margin-right: 6px; font-size: 12px; }
+
+  /* 对话示例 */
+  .chat { background: var(--card); border-radius: 16px; border: 1px solid rgba(255,255,255,.95); box-shadow: 0 12px 28px rgba(80,140,200,.14); overflow: hidden; }
+  .chat .msg { padding: 12px 18px; border-bottom: 1px solid rgba(180,210,235,.4); }
+  .chat .q { background: rgba(232,244,255,.7); }
+  .chat .a { background: rgba(255,255,255,.6); }
+  .chat .who { font-weight: 700; color: var(--light); margin-right: 8px; }
+  .chat table { border-collapse: collapse; margin: 8px 0; font-size: 14px; width: 100%; }
+  .chat th, .chat td { border: 1px solid rgba(170,205,235,.75); padding: 4px 8px; text-align: left; }
+  .chat th { background: linear-gradient(180deg,#f7fbff,#d4e8ff); color: var(--blue); }
+  .trace { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+  /* 架构 */
+  .arch { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .arch .row { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .box { background: var(--card); border: 1.5px solid rgba(126,186,242,.8); border-radius: 12px; padding: 10px 16px; text-align: center; color: var(--blue); font-weight: 700; box-shadow: 0 8px 18px rgba(80,140,200,.12); }
+  .box small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .box.hot { background: linear-gradient(180deg, #8ec8ff, #4d92f0); color: #fff; border: 0; }
+  .box.hot small { color: rgba(255,255,255,.85); }
+  .arrow { color: var(--light); font-weight: 700; font-size: 20px; }
+  .arrow.v { transform: rotate(90deg); }
+
+  /* 表格 */
+  table.grid { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 8px; background: rgba(255,255,255,.6); }
+  table.grid th, table.grid td { border: 1px solid rgba(170,205,235,.7); padding: 7px 10px; text-align: left; vertical-align: top; }
+  table.grid th { background: linear-gradient(180deg,#f7fbff,#d4e8ff); color: var(--blue); }
+
+  .two { display: flex; gap: 24px; }
+  .two > div { flex: 1; }
+  .vision { font-size: 24px; line-height: 1.9; color: var(--blue); background: var(--card); border-radius: 16px; padding: 34px; box-shadow: 0 12px 28px rgba(80,140,200,.14); border: 1px solid rgba(255,255,255,.95); }
+  .vision .lead { font-size: 15px; color: var(--muted); letter-spacing: .15em; margin-bottom: 10px; }
+  .qna { justify-content: center; align-items: center; text-align: center; }
+  .qna h1 { font-size: 60px; margin-bottom: 10px; }
+  .qna .try { font-size: 20px; color: var(--muted); }
+  .qna .try a { color: var(--light); font-weight: 700; text-decoration: none; }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="footer">校园知识咨询 · 杨富林与黎正阳的团队 · 答辩 2026-11-09</div>
+<div class="page"><span id="cur">1</span> / <span id="total">14</span></div>
+<div class="nav">
+  <button onclick="go(-1)">← 上一页</button>
+  <button onclick="full()">全屏 (F11 或点击)</button>
+  <button onclick="go(1)">下一页 →</button>
+</div>
+
+<!-- 1 封面 -->
+<section class="slide cover active">
+  <span class="time">约 15 秒</span>
+  <svg class="logo" viewBox="0 0 240 240"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5aa4ef"/><stop offset="1" stop-color="#1d4e89"/></linearGradient></defs><rect width="240" height="240" rx="52" fill="url(#bg)"/><path d="M48 52h144a20 20 0 0 1 20 20v64a20 20 0 0 1-20 20h-84l-36 32v-32H48a20 20 0 0 1-20-20V72a20 20 0 0 1 20-20z" fill="#fff"/><g stroke="#1d4e89" stroke-width="5" stroke-linecap="round"><line x1="72" y1="84" x2="168" y2="84"/><line x1="72" y1="110" x2="168" y2="110"/><line x1="72" y1="136" x2="168" y2="136"/><line x1="94" y1="60" x2="94" y2="158"/><line x1="126" y1="60" x2="126" y2="158"/><line x1="158" y1="60" x2="158" y2="158"/></g><rect x="98" y="64" width="24" height="16" rx="4" fill="#4d92f0"/><rect x="130" y="88" width="24" height="16" rx="4" fill="#4d92f0"/><rect x="98" y="112" width="24" height="16" rx="4" fill="#4d92f0"/><rect x="162" y="112" width="24" height="16" rx="4" fill="#4d92f0"/><rect x="130" y="136" width="24" height="16" rx="4" fill="#8ec8ff"/><circle cx="196" cy="196" r="22" fill="#fff"/><path d="M186 198l8-12 10 20z" fill="#4d92f0"/><path d="M193 184a8 8 0 0 1 6-8 8 8 0 0 1 6 8" fill="none" stroke="#4d92f0" stroke-width="4" stroke-linecap="round"/></svg>
+  <h1>校园知识咨询</h1>
+  <div class="sub">一个「能说会做」的课表智能体</div>
+  <div class="team">杨富林与黎正阳的团队</div>
+  <div class="meta">3124004072 杨富林 ｜ 3124004060 黎正阳<br/>广东工业大学 · 构建一个能说会做的智能体 · 2026-11-09</div>
+</section>
+
+<!-- 2 团队展示 -->
+<section class="slide">
+  <span class="time">约 30 秒</span>
+  <div class="kicker">团队展示</div>
+  <h2>两个人，一条流水线</h2>
+  <div class="cards">
+    <div class="member">
+      <div class="avatar">杨</div>
+      <div class="name">杨富林</div>
+      <div class="no">3124004072 · 后端 / 架构</div>
+      <table>
+        <tr><td>性格</td><td>沉稳细致，喜欢追根究底</td></tr>
+        <tr><td>擅长</td><td>Python、SQLite、Linux 部署</td></tr>
+        <tr><td>分工</td><td>智能体对话循环、MCP 工具层、数据库与检索、教务接口、上线部署</td></tr>
+      </table>
+    </div>
+    <div class="member">
+      <div class="avatar">黎</div>
+      <div class="name">黎正阳</div>
+      <div class="no">3124004060 · 前端 / 测试</div>
+      <table>
+        <tr><td>性格</td><td>开朗主动，注重用户体验</td></tr>
+        <tr><td>擅长</td><td>HTML/CSS/JS、接口联调、测试</td></tr>
+        <tr><td>分工</td><td>单页前端、账号与教务接入联调、单元测试</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="photo-note">【此处放团队合照】</div>
+</section>
+
+<!-- 3 选题报告 -->
+<section class="slide">
+  <span class="time">约 45 秒 · 重点</span>
+  <div class="kicker">选题报告</div>
+  <h2>选题来自真实痛点，不是拍脑袋</h2>
+  <div class="pain">
+    <div class="p"><b>查课表难</b>教务系统登录繁琐，课室、教师、节次分散在多个页面；上课前临时找课室是每周必修操作。</div>
+    <div class="p"><b>记考试难</b>期中、期末、答辩时间散落在各门课通知里，没有统一的提前提醒。</div>
+    <div class="p"><b>复习没抓手</b>某次课讲了什么、遗留什么问题全凭笔记，期末想按教学内容复习无从查起。</div>
+    <div class="p"><b>成绩看不懂</b>教务只给分数列表，不会告诉你哪几门偏低、该先补什么。</div>
+    <div class="p"><b>资源分散</b>想补一门课，要在 B 站、教材、笔记之间来回切换。</div>
+  </div>
+  <div class="survey">调研（访谈本班与邻班 11 名同学）：<b>9 人</b>每周都会「上课前查课室 / 考试前找时间地点」；<b>8 人</b>希望有一个统一入口把课表、考试、复盘、成绩放在一起；大家共同的底线是——<b>课室、时间、分数不能瞎编</b>。</div>
+</section>
+
+<!-- 4 产品定位 -->
+<section class="slide">
+  <span class="time">约 20 秒</span>
+  <div class="kicker">选题报告 · 产品定位</div>
+  <h2>把五件事，收进一个对话窗口</h2>
+  <p style="font-size:18px">面向广工学生的校园知识咨询智能体：用中文对话完成课表、考试、复盘、评价、成绩与公开课推荐。所有事实性回答<b>必须来自工具查询的真实数据</b>。</p>
+  <div class="chips">
+    <span class="chip"><em>说</em>中文自然语言问答</span>
+    <span class="chip"><em>做</em>16 个真实工具</span>
+    <span class="chip">课表看板</span>
+    <span class="chip">考试提醒</span>
+    <span class="chip">课堂复盘</span>
+    <span class="chip">课程评价</span>
+    <span class="chip">成绩分析</span>
+    <span class="chip">B站公开课推荐</span>
+    <span class="chip">语音输入 / 朗读</span>
+  </div>
+  <div class="chips">
+    <span class="chip">网页 + 命令行 + MCP 进程</span>
+    <span class="chip">公网已上线：8.134.98.200:443（开机自启）</span>
+    <span class="chip">模型可替换：DeepSeek / 任意 OpenAI 兼容接口</span>
+  </div>
+</section>
+
+<!-- 5 杀手级功能 1 -->
+<section class="slide">
+  <span class="time">约 30 秒 · 杀手级功能</span>
+  <div class="kicker">杀手级功能 ①</div>
+  <h2>中文问课表，回答里没有一句是编的</h2>
+  <div class="chat">
+    <div class="msg q"><span class="who">问</span>明天有什么课？课室和老师是谁？</div>
+    <div class="msg a">
+      <span class="who">答</span>明天（周一）有 3 门课：
+      <table>
+        <tr><th>时间</th><th>课程</th><th>教师</th><th>课室</th><th>教学内容</th></tr>
+        <tr><td>08:30-10:05</td><td>软件工程</td><td>李老师</td><td>教3-201</td><td>用例建模</td></tr>
+        <tr><td>10:25-12:00</td><td>操作系统</td><td>王老师</td><td>实验2-501</td><td>进程调度</td></tr>
+        <tr><td>14:00-15:35</td><td>数据库原理</td><td>陈老师</td><td>教1-103</td><td>事务与锁</td></tr>
+      </table>
+      <div class="trace">本次调用工具：list_courses(tomorrow)（成功） —— 课表看板与对话同源</div>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:10px">没配模型密钥也能回答：自动降级为关键词路由；模型接口失败时如实说明，绝不把猜测当课表。</p>
+</section>
+
+<!-- 6 杀手级功能 2 -->
+<section class="slide">
+  <span class="time">约 30 秒 · 杀手级功能</span>
+  <div class="kicker">杀手级功能 ②</div>
+  <h2>考试主动提醒 + 课堂复盘进检索</h2>
+  <div class="two">
+    <div>
+      <h3>考试提醒</h3>
+      <ul>
+        <li>导入课表后自动带出考试与答辩</li>
+        <li>倒计时 + 提醒窗口（默认提前 7 天），该提醒的标红</li>
+        <li>一句话补记：「添加考试 编译原理 2026-12-20 09:00 教3-305」</li>
+      </ul>
+      <h3>课堂复盘</h3>
+      <ul>
+        <li>课后一句话记下主题、要点、遗留问题</li>
+        <li>复盘内容进入 BM25 检索，复习时问得到</li>
+        <li>课程详情自动附上最近一次复盘</li>
+      </ul>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="msg q"><span class="who">问</span>最近有哪些考试要提醒？</div>
+        <div class="msg a"><span class="who">答</span>
+          <table>
+            <tr><th>课程</th><th>时间</th><th>地点</th><th>还有</th><th>状态</th></tr>
+            <tr><td>软件工程</td><td>2026-11-12 19:00</td><td>教3-201</td><td>4 天</td><td>该提醒了</td></tr>
+            <tr><td>操作系统</td><td>2026-12-02 09:00</td><td>实验2-501</td><td>24 天</td><td>先记在日历上</td></tr>
+          </table>
+          <div class="trace">upcoming_exams（成功）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 杀手级功能 3 -->
+<section class="slide">
+  <span class="time">约 30 秒 · 杀手级功能</span>
+  <div class="kicker">杀手级功能 ③</div>
+  <h2>教务成绩一键导入，AI 帮你读成绩单</h2>
+  <div class="two">
+    <div>
+      <ul>
+        <li>登录教务（浏览器登录 / 粘贴 Cookie）自动导入<b>总评、平时、期中、期末、学分、绩点</b></li>
+        <li>成绩<b>只能来自教务</b>，系统拒绝手记——分数绝不造假</li>
+        <li>「导入刷新」用已保存会话一键更新，无需重新登录</li>
+        <li>教务密码不保存，Cookie 只存服务端、接口不返回</li>
+      </ul>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="msg q"><span class="who">问</span>分析一下我的成绩</div>
+        <div class="msg a"><span class="who">答</span>已分析 8 门百分制成绩，平均 81.4 分。75 分以下的课建议先复习：
+          <table>
+            <tr><th>课程</th><th>项目</th><th>百分制</th></tr>
+            <tr><td>操作系统</td><td>期中</td><td>68.5</td></tr>
+            <tr><td>软件工程</td><td>总评</td><td>72.0</td></tr>
+          </table>
+          可以到课程问答里继续问「操作系统」，并让我推荐 B 站课程。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 杀手级功能 4 -->
+<section class="slide">
+  <span class="time">约 30 秒 · 杀手级功能</span>
+  <div class="kicker">杀手级功能 ④</div>
+  <h2>每门课一个「课程问答」会话，本机不够就上 B 站</h2>
+  <div class="two">
+    <div>
+      <h3>课程问答模式</h3>
+      <ul>
+        <li>每门课独立会话，系统提示把回答<b>锁在当前课程</b>，不串课</li>
+        <li>优先查本机教学内容、复盘与检索索引，不把没查到的说成老师讲过</li>
+        <li>本机没有足够材料时，自动搜索 <b>B 站公开课</b>，给出标题、UP 主、播放量与链接</li>
+        <li>回答先讲清知识点，再给一个可以马上做的复习动作</li>
+      </ul>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="msg q"><span class="who">问</span>（课程问答 · 操作系统）进程调度有哪些策略？推荐一门公开课</div>
+        <div class="msg a"><span class="who">答</span>先到先得、短作业优先、时间片轮转、多级反馈队列……（本机复盘补充：上次课讲了时间片轮转）
+          <table>
+            <tr><th>课程</th><th>UP主</th><th>播放</th><th>链接</th></tr>
+            <tr><td>操作系统·进程调度</td><td>某UP主</td><td>12.3万</td><td>https://…</td></tr>
+          </table>
+          <div class="trace">search_knowledge → list_reviews → recommend_courses（成功）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 技术架构 -->
+<section class="slide">
+  <span class="time">约 30 秒</span>
+  <div class="kicker">技术方案</div>
+  <h2>三层架构：对话、工具、数据各司其职</h2>
+  <div class="arch">
+    <div class="row">
+      <div class="box hot">浏览器<br/><small>单页前端 · 课表看板 · 咨询台 · 语音</small></div>
+      <span class="arrow">→</span>
+      <div class="box hot">web.py<br/><small>HTTP 服务 · 账号 · 教务同步</small></div>
+      <span class="arrow">→</span>
+      <div class="box hot">Agent 对话循环<br/><small>模型工具调用 ≤5 轮 / 无密钥关键词兜底</small></div>
+    </div>
+    <div class="row">
+      <div class="box">DeepSeek<br/><small>OpenAI 兼容接口 · 可选可替换</small></div>
+      <span class="arrow">⇄</span>
+      <div class="box">McpClient → MCP 进程<br/><small>stdio · JSON-RPC 2.0 · 16 个工具</small></div>
+      <span class="arrow">→</span>
+      <div class="box">tools.py<br/><small>课表/考试/复盘/评价/成绩/推荐</small></div>
+    </div>
+    <div class="row">
+      <div class="box">教务 jxfw.gdut.edu.cn<br/><small>课表 + 成绩（不碰小程序）</small></div>
+      <span class="arrow">→</span>
+      <div class="box">SQLite（WAL）<br/><small>12 张表 · 按 user_id 隔离</small></div>
+      <span class="arrow">←</span>
+      <div class="box">BM25 检索 + 长期记忆<br/><small>中文单字/双字切词 · 30 条记忆</small></div>
+      <span class="arrow">→</span>
+      <div class="box">B 站公开搜索<br/><small>推荐课程</small></div>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:12px">亮点：仅用 Python 3.10+ 标准库（零第三方依赖）；网页 / 命令行 / 外部智能体客户端共用同一套 MCP 工具；模型故障时核心查询不中断。</p>
+</section>
+
+<!-- 10 需求分析 -->
+<section class="slide">
+  <span class="time">约 25 秒</span>
+  <div class="kicker">需求分析</div>
+  <h2>功能需求与边界</h2>
+  <table class="grid">
+    <tr><th style="width:150px">模块</th><th>核心需求（已实现并部署）</th><th>明确不做</th></tr>
+    <tr><td>账号与数据</td><td>注册/登录（PBKDF2 哈希）、教务登录导入、多用户严格隔离</td><td>不保存教务密码</td></tr>
+    <tr><td>课表</td><td>CSV/JSON/教务三种导入；今天/明天/本周/全部查询；看板翻周</td><td>不做选课、抢课</td></tr>
+    <tr><td>考试与复盘</td><td>提醒窗口标注、补记考试、复盘记录与检索</td><td>—</td></tr>
+    <tr><td>评价与成绩</td><td>按课程/教师双维度评价；教务成绩导入 + 百分制分析</td><td>不允许手记成绩</td></tr>
+    <tr><td>问答</td><td>校园咨询 + 每门课独立课程问答；B 站推荐；语音输入与朗读；无密钥兜底</td><td>不调用日在广工小程序</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:10px">验收标准共 14 条（A1～A14），全部对应已实现能力，文档里每条都写明验证方式——不画大饼。</p>
+</section>
+
+<!-- 11 工程实践 -->
+<section class="slide">
+  <span class="time">约 25 秒</span>
+  <div class="kicker">工程实践</div>
+  <h2>四周迭代，测试与部署齐全</h2>
+  <table class="grid">
+    <tr><th>迭代</th><th>时间</th><th>内容</th></tr>
+    <tr><td>v0.1</td><td>10-26 ～ 11-01</td><td>痛点调研、数据表设计、课表解析（CSV/JSON/周次表达式）</td></tr>
+    <tr><td>v0.2</td><td>11-02 ～ 11-05</td><td>16 个工具、MCP 服务与客户端、Agent 对话循环、BM25 检索、长期记忆</td></tr>
+    <tr><td>v0.3</td><td>11-06 ～ 11-07</td><td>单页前端、注册登录、教务导入课表与成绩、语音</td></tr>
+    <tr><td>v1.0</td><td>11-08</td><td>17 项单元测试、示例课表、公网部署 + 开机自启</td></tr>
+  </table>
+  <p style="margin-top:12px">质量保障：<b>17 项单元测试</b>覆盖周次换算、提醒窗口、导入回写、多用户隔离、HTTP 对话、成绩分析等；部署用 systemd（Restart=always），崩溃自愈、开机自启。</p>
+</section>
+
+<!-- 12 上线运行 -->
+<section class="slide">
+  <span class="time">约 15 秒</span>
+  <div class="kicker">上线运行</div>
+  <h2>公网可访问，随时检查</h2>
+  <p style="font-size:20px; margin-bottom:10px">试用地址：<b><a href="http://8.134.98.200:443/" style="color:var(--light)">http://8.134.98.200:443/</a></b>（测试机 443 端口，系统用户 + systemd 开机自启）</p>
+  <div style="text-align:center"><img src="页面截图.png" alt="试用页面截图" style="max-width:94%; max-height:400px; border-radius:14px; box-shadow:0 12px 28px rgba(80,140,200,.22); border:1px solid rgba(255,255,255,.95);" /></div>
+  <p class="small muted" style="margin-top:10px">体验路径：打开地址 → 点「登录」载入示例课表（或注册账号导入自己的课表）→ 问「明天有什么课」「最近有哪些考试」→ 切到课程问答选一门课问「这门课在讲什么」。</p>
+</section>
+
+<!-- 13 愿景 -->
+<section class="slide">
+  <span class="time">约 15 秒</span>
+  <div class="kicker">愿景</div>
+  <h2>我们想走到哪</h2>
+  <div class="vision">
+    <div class="lead">PROJECT VISION · 100 字</div>
+    让每一位广工学生都拥有一个懂自己课表的智能体：上课前提醒课室和考试，下课后帮忙复盘要点，期末依据成绩指出复习方向。未来把更多校园数据接入对话，让查课表、问成绩、找公开课都变成一句话的事，成为同学们身边最靠谱的学习伙伴。
+  </div>
+</section>
+
+<!-- 14 Q&A -->
+<section class="slide qna">
+  <h1>谢谢，请老师提问</h1>
+  <div class="try">项目仓库：<a href="https://github.com/xiersg/campus-knowledge-agent">github.com/xiersg/campus-knowledge-agent</a><br/>试用地址：<a href="http://8.134.98.200:443/">http://8.134.98.200:443/</a></div>
+</section>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let idx = 0;
+  document.getElementById('total').textContent = slides.length;
+  function show(n) {
+    idx = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    document.getElementById('cur').textContent = idx + 1;
+    document.getElementById('progress').style.width = ((idx + 1) / slides.length * 100) + '%';
+  }
+  function go(d) { show(idx + d); }
+  function full() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    else document.exitFullscreen();
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(-1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'f' || e.key === 'F') full();
+  });
+  show(0);
+</script>
+</body>
+</html>
