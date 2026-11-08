@@ -106,9 +106,10 @@
     <div class="dialog" id="loginDialog">
       <div class="hd">登录 <button type="button" class="x" id="closeLogin">关闭</button></div>
       <div class="bd">
-        <div class="row">在弹出的学校页面登录。登录成功后自动导入课表，并在这台电脑上保持登录。也可以粘贴教务 Cookie。</div>
+        <div class="row">在你自己的电脑上可以打开学校登录页，成功后自动导入课表。服务器上请载入示例课表，或粘贴教务 Cookie。</div>
         <div class="row"><label>学期代码</label> <input id="semester" value="202601" style="width:80px" /></div>
         <div class="row">
+          <button type="button" id="loadSample">载入示例课表</button>
           <button type="button" id="openLogin">打开学校登录页</button>
           <button type="button" id="doSync">用 Cookie 登录</button>
           <button type="button" id="logoutBtn">退出</button>
@@ -195,6 +196,7 @@
           <button type="button" id="openExam">考试提醒</button>
           <button type="button" id="openGrade">考试成绩</button>
           <button type="button" id="openRating">课程评价</button>
+          <button type="button" id="loadSampleRail">载入示例课表</button>
           <button type="button" id="importBtn">导入刷新</button>
         </div>
       </div>
@@ -877,30 +879,31 @@
       }, 1000);
     }
 
-    async function beginBrowserImport(button) {
-      button.disabled = true;
-      button.textContent = "请稍候";
-      setStatus("正在打开学校登录页");
-      if (!await ensureSession()) {
-        button.disabled = false;
-        button.textContent = button.dataset.label;
-        return;
+    const schoolLogin = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin";
+
+    function openSchoolLogin() {
+      const popup = window.open(schoolLogin, "gdutLogin");
+      if (!popup) {
+        setStatus("浏览器拦住了学校登录页。请允许弹窗后再点一次。");
+        return false;
       }
+      return true;
+    }
+
+    async function beginBrowserImport(button) {
+      if (!openSchoolLogin()) return;
+      setStatus("已打开学校教务登录页。登录后在该页按 F12，打开网络，复制请求头里的 Cookie，贴到下面再点「用 Cookie 登录」。浏览器不允许本站读取另一个网站的 Cookie。");
+      const box = document.querySelector("#cookie");
+      if (box) box.focus();
+      if (!await ensureSession()) return;
       let started;
       try {
         started = await post(api("/api/gdut-browser-sync"), { semester: semesterCode() });
       } catch (err) {
-        setStatus("页面请求失败，请确认本机服务还开着");
-        button.disabled = false;
-        button.textContent = button.dataset.label;
         return;
       }
-      setStatus(started.message || started.error || "请在弹出的学校页面登录");
-      if (!started.ok) {
-        button.disabled = false;
-        button.textContent = button.dataset.label;
-        return;
-      }
+      if (!started.ok) return;
+      button.disabled = true;
       watchImport(button);
     }
 
@@ -973,6 +976,22 @@
     document.querySelector("#mask").addEventListener("click", (event) => {
       if (event.target.id === "mask") closeModal();
     });
+    async function loadSampleSchedule() {
+      if (!await ensureSession()) return;
+      let data;
+      try {
+        data = await post(api("/api/sample"), {});
+      } catch (err) {
+        setStatus("页面请求失败，请确认服务还开着");
+        return;
+      }
+      if (!data.ok) { setStatus(data.error || "示例课表没有载入"); return; }
+      setStatus("已载入示例课表 " + data.courses + " 门课");
+      await refresh();
+      closeModal();
+    }
+    document.querySelector("#loadSample").addEventListener("click", loadSampleSchedule);
+    document.querySelector("#loadSampleRail").addEventListener("click", loadSampleSchedule);
     document.querySelector("#openLogin").addEventListener("click", () => beginBrowserImport(document.querySelector("#openLogin")));
     document.querySelector("#refreshLogin").addEventListener("click", () => beginBrowserImport(document.querySelector("#refreshLogin")));
     document.querySelector("#doRefresh").addEventListener("click", async () => {

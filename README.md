@@ -4,7 +4,7 @@
 
 作业说明：<https://edu.cnblogs.com/campus/gdgy/Class56-Grade2024-CS/homework/16760>
 
-试用地址（珠宝项目的国内测试机）：<http://8.134.98.200:443/>
+试用地址（珠宝项目的国内测试机）：<http://8.134.98.200:8088/campus/>
 
 ## 能做什么
 
@@ -103,6 +103,8 @@ deploy/                        测试机 systemd 单元
 
 ## 测试机部署
 
-国内测试机 `8.134.98.200` 上，服务以系统用户 `campusagent` 跑在 `/opt/campus-knowledge-agent`，监听 `0.0.0.0:443`。systemd 已设为开机自启，数据库留在该目录的 `data/`。安全组未放行 8765，443 当前空闲且外网可连，所以试用地址是 <http://8.134.98.200:443/>。这里是明文 HTTP，不是 HTTPS。单元文件是 `deploy/campus-knowledge-agent.service`。它不进入珠宝项目的容器或 Jenkins。
+国内测试机 `8.134.98.200` 上，服务以系统用户 `campusagent` 跑在 `/opt/campus-knowledge-agent`，监听 `8765`，`Restart=always` 并开机自启。数据库在该目录的 `data/`。公网地址是 <http://8.134.98.200:8088/campus/>。`deploy/campus-nginx-proxy.timer` 会在开机后和每 3 分钟检查一次，若珠宝项目的 Nginx 部署盖掉了转发，就按 `deploy/nginx-campus.location` 补回去。
+
+点「打开学校登录页」会在你自己的浏览器里打开教务登录页。教务的会话 Cookie 带有 HttpOnly，网页不能读取另一个网站的 Cookie。登录后需要在教务页面的网络请求里复制 Cookie，再贴回来。程序跑在你自己的电脑上、并且本机有 Edge 或 Chrome 时，仍会尝试自动读取这一次登录的 Cookie。不保存教务密码。
 
 服务器上的 `.env` 单独放置，不进 Git。浏览器自动打开教务登录窗口只在本机可用。

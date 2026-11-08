@@ -1,0 +1,11 @@
+[Unit]
+Description=定期确认校园咨询转发还在
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=3min
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target
