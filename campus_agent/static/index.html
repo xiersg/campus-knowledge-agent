@@ -879,30 +879,31 @@
       }, 1000);
     }
 
-    async function beginBrowserImport(button) {
-      button.disabled = true;
-      button.textContent = "请稍候";
-      setStatus("正在打开学校登录页");
-      if (!await ensureSession()) {
-        button.disabled = false;
-        button.textContent = button.dataset.label;
-        return;
+    const schoolLogin = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin";
+
+    function openSchoolLogin() {
+      const popup = window.open(schoolLogin, "gdutLogin");
+      if (!popup) {
+        setStatus("浏览器拦住了学校登录页。请允许弹窗后再点一次。");
+        return false;
       }
+      return true;
+    }
+
+    async function beginBrowserImport(button) {
+      if (!openSchoolLogin()) return;
+      setStatus("已打开学校教务登录页。登录后在该页按 F12，打开网络，复制请求头里的 Cookie，贴到下面再点「用 Cookie 登录」。浏览器不允许本站读取另一个网站的 Cookie。");
+      const box = document.querySelector("#cookie");
+      if (box) box.focus();
+      if (!await ensureSession()) return;
       let started;
       try {
         started = await post(api("/api/gdut-browser-sync"), { semester: semesterCode() });
       } catch (err) {
-        setStatus("页面请求失败，请确认本机服务还开着");
-        button.disabled = false;
-        button.textContent = button.dataset.label;
         return;
       }
-      setStatus(started.message || started.error || "请在弹出的学校页面登录");
-      if (!started.ok) {
-        button.disabled = false;
-        button.textContent = button.dataset.label;
-        return;
-      }
+      if (!started.ok) return;
+      button.disabled = true;
       watchImport(button);
     }
 

@@ -1,0 +1,8 @@
+[Unit]
+Description=保持校园咨询的 Nginx 转发
+After=docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/campus-knowledge-agent/deploy/ensure_nginx.py
