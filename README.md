@@ -4,7 +4,7 @@
 
 作业说明：<https://edu.cnblogs.com/campus/gdgy/Class56-Grade2024-CS/homework/16760>
 
-试用地址（珠宝项目的国内测试机，临时）：<http://8.134.98.200:8765>
+试用地址（珠宝项目的国内测试机，临时）：<http://8.134.98.200:8088/campus/>
 
 ## 能做什么
 
@@ -103,6 +103,6 @@ deploy/                        测试机 systemd 单元
 
 ## 测试机部署
 
-国内测试机 `8.134.98.200` 上，服务以系统用户 `campusagent` 跑在 `/opt/campus-knowledge-agent`，监听 `0.0.0.0:8765`。单元文件是 `deploy/campus-knowledge-agent.service`。它不进入珠宝项目的容器、Nginx 或 Jenkins。
+国内测试机 `8.134.98.200` 上，服务以系统用户 `campusagent` 跑在 `/opt/campus-knowledge-agent`，只监听本机 `8765`。开发站 Nginx 的 `8088` 把 `/campus/` 转到这个端口，所以公网地址是 <http://8.134.98.200:8088/campus/>。单元文件是 `deploy/campus-knowledge-agent.service`，转发片段是 `deploy/nginx-campus.location`。它不进入珠宝项目的容器或 Jenkins。下次珠宝 Nginx 部署如果覆盖 `lab-pages.conf`，需要把这段转发加回去。
 
 服务器上的 `.env` 单独放置，不进 Git。浏览器自动打开教务登录窗口只在本机可用。

@@ -238,6 +238,8 @@
     const account = document.querySelector("#account");
     const log = document.querySelector("#log");
     const input = document.querySelector("#input");
+    const apiBase = location.pathname === "/campus" || location.pathname.startsWith("/campus/") ? "/campus" : "";
+    function api(path) { return apiBase + path; }
     let user = null;
     let speakOn = false;
     let lastReply = "";
@@ -324,7 +326,7 @@
     async function ensureSession() {
       if (user) return true;
       try {
-        const me = await fetch("/api/me").then((response) => response.json());
+        const me = await fetch(api("/api/me")).then((response) => response.json());
         if (me.user) {
           user = me.user;
           renderAccount();
@@ -342,14 +344,14 @@
         localStorage.setItem("campus-local-no", studentNo);
         localStorage.setItem("campus-local-pass", password);
       }
-      let data = await post("/api/login", { student_no: studentNo, password });
-      if (!data.ok) data = await post("/api/register", { student_no: studentNo, password, display_name: "同学" });
+      let data = await post(api("/api/login"), { student_no: studentNo, password });
+      if (!data.ok) data = await post(api("/api/register"), { student_no: studentNo, password, display_name: "同学" });
       if (!data.ok) {
         studentNo = "u" + Math.random().toString(36).slice(2, 10);
         password = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
         localStorage.setItem("campus-local-no", studentNo);
         localStorage.setItem("campus-local-pass", password);
-        data = await post("/api/register", { student_no: studentNo, password, display_name: "同学" });
+        data = await post(api("/api/register"), { student_no: studentNo, password, display_name: "同学" });
       }
       if (!data.ok) {
         setStatus(data.error || "本机会话没有就绪");
@@ -462,7 +464,7 @@
         }
         return;
       }
-      const query = "/api/messages?session_id=" + encodeURIComponent(activeSession()) + "&limit=12" + (before ? "&before=" + before : "");
+      const query = api("/api/messages") + "?session_id=" + encodeURIComponent(activeSession()) + "&limit=12" + (before ? "&before=" + before : "");
       const data = await fetch(query).then((response) => response.json());
       if (!data.ok) return;
       const frag = document.createDocumentFragment();
@@ -532,7 +534,7 @@
 
     async function refresh() {
       if (!user) return;
-      const response = await fetch("/api/overview");
+      const response = await fetch(api("/api/overview"));
       const data = await response.json();
       const board = document.querySelector("#board");
       const exams = document.querySelector("#exams");
@@ -695,7 +697,7 @@
         if (!ready) return;
       }
       weekOffset = offset;
-      const data = await fetch("/api/week?offset=" + offset).then((response) => response.json());
+      const data = await fetch(api("/api/week?offset=") + offset).then((response) => response.json());
       renderWeek(data);
       if (scroll) setWeekOpen(true);
     }
@@ -714,7 +716,7 @@
     }
 
     async function loadRatings() {
-      const data = await fetch("/api/evaluations").then((response) => response.json());
+      const data = await fetch(api("/api/evaluations")).then((response) => response.json());
       if (!data.ok) {
         document.querySelector("#rateMsg").textContent = data.error || "评价读取失败";
         return;
@@ -724,7 +726,7 @@
     }
 
     async function loadGrades() {
-      const data = await fetch("/api/grades").then((response) => response.json());
+      const data = await fetch(api("/api/grades")).then((response) => response.json());
       const box = document.querySelector("#gradeList");
       box.replaceChildren();
       if (!data.ok) {
@@ -757,7 +759,7 @@
       }
       const userBox = addPost("user", message);
       input.value = "";
-      const data = await post("/api/chat", { session_id: activeSession(), message, mode: chatMode, topic: chatMode === "knowledge" ? knowledgeTopic : "" });
+      const data = await post(api("/api/chat"), { session_id: activeSession(), message, mode: chatMode, topic: chatMode === "knowledge" ? knowledgeTopic : "" });
       if (data.user_message_id) userBox.dataset.id = String(data.user_message_id);
       lastReply = data.reply || data.error || "没有得到回答";
       addPost("assistant", lastReply, data.traces || [], data.assistant_message_id);
@@ -854,7 +856,7 @@
       const timer = setInterval(async () => {
         let status;
         try {
-          status = await fetch("/api/gdut-browser-sync").then((response) => response.json());
+          status = await fetch(api("/api/gdut-browser-sync")).then((response) => response.json());
         } catch (err) {
           clearInterval(timer);
           setStatus("页面请求失败，请确认本机服务还开着");
@@ -886,7 +888,7 @@
       }
       let started;
       try {
-        started = await post("/api/gdut-browser-sync", { semester: semesterCode() });
+        started = await post(api("/api/gdut-browser-sync"), { semester: semesterCode() });
       } catch (err) {
         setStatus("页面请求失败，请确认本机服务还开着");
         button.disabled = false;
@@ -914,7 +916,7 @@
     document.querySelector("#analyzeGrade").addEventListener("click", async () => {
       const box = document.querySelector("#gradeAnalysis");
       box.textContent = "正在分析已导入的成绩。";
-      const data = await fetch("/api/grade-analysis").then((response) => response.json());
+      const data = await fetch(api("/api/grade-analysis")).then((response) => response.json());
       box.replaceChildren();
       if (!data.ok) {
         document.querySelector("#gradeMsg").textContent = data.error || "分析失败";
@@ -980,7 +982,7 @@
       if (!await ensureSession()) { button.disabled = false; return; }
       let data;
       try {
-        data = await post("/api/gdut-refresh", { semester: semesterCode() });
+        data = await post(api("/api/gdut-refresh"), { semester: semesterCode() });
       } catch (err) {
         setStatus("页面请求失败，请确认本机服务还开着");
         button.disabled = false;
@@ -999,7 +1001,7 @@
       if (!await ensureSession()) { button.disabled = false; return; }
       let data;
       try {
-        data = await post("/api/gdut-sync", { semester: semesterCode(), cookie: box.value });
+        data = await post(api("/api/gdut-sync"), { semester: semesterCode(), cookie: box.value });
       } catch (err) {
         setStatus("页面请求失败，请确认本机服务还开着");
         button.disabled = false;
@@ -1013,7 +1015,7 @@
       refresh();
     });
     document.querySelector("#logoutBtn").addEventListener("click", async () => {
-      await post("/api/logout", {});
+      await post(api("/api/logout"), {});
       localStorage.removeItem("campus-local-no");
       localStorage.removeItem("campus-local-pass");
       user = null;
@@ -1033,7 +1035,7 @@
       const button = document.querySelector("#saveRating");
       button.disabled = true;
       if (!await ensureSession()) { button.disabled = false; return; }
-      const data = await post("/api/evaluations", {
+      const data = await post(api("/api/evaluations"), {
         course_name: document.querySelector("#rateCourse").value,
         teacher: document.querySelector("#rateTeacher").value,
         rating: Number(document.querySelector("#rateScore").value),
@@ -1080,7 +1082,7 @@
       }
       else addPost("assistant", "点右上角「登录」。登录会保持在这台电脑上，成功后自动导入课表。课表有变动时，再点「导入刷新」。");
     });
-    fetch("/api/health").then((response) => response.json()).then((data) => {
+    fetch(api("/api/health")).then((response) => response.json()).then((data) => {
       if (!data.model_configured) document.querySelector("#status").textContent = "未配置模型密钥，将直接查询已导入的课表";
     });
   </script>

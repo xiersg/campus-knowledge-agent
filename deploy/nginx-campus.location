@@ -1,0 +1,8 @@
+# campus-knowledge-agent
+# 挂在开发站 :8088，不占用珠宝站点的根路径。下次珠宝 Nginx 部署若覆盖 lab-pages.conf，需要把这段加回去。
+location = /campus { return 301 /campus/; }
+location /campus/ {
+    proxy_pass http://172.18.0.1:8765/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
