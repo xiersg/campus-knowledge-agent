@@ -1,0 +1,14 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+data/*.db
+data/*.db-wal
+data/*.db-shm
+.pytest_cache/
+*.log
+deploy/ensure_nginx.py
+deploy/nginx-campus.location
+deploy/campus-nginx-proxy.service
+deploy/campus-nginx-proxy.timer

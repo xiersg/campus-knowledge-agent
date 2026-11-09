@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>广工资讯 - 校园知识咨询</title>
+  <style>
+    html, body { height: 100%; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: linear-gradient(165deg, #f7fbff 0%, #e7f3ff 46%, #d6ebff 100%); color: #1d3a56; font: 13px/1.55 "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    a { color: #2f7de1; }
+    a:visited { color: #5b6fd6; }
+    table { border-collapse: collapse; }
+    .top { background: linear-gradient(90deg, rgba(255, 255, 255, .72), rgba(214, 235, 255, .55)); color: #5d7c99; padding: 6px 18px; letter-spacing: .08em; font-size: 12px; border-bottom: 1px solid rgba(255, 255, 255, .8); }
+    .banner { width: calc(100% - 32px); margin: 0 16px 8px; }
+    .logo { color: #1d4e89; font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: 1px; }
+    .logo small { display: block; color: #5aa4ef; font-size: 12px; letter-spacing: .18em; font-weight: 500; margin-top: 6px; }
+    .slogan { color: #5d7c99; padding-left: 16px; }
+    .nav { width: auto; margin: 0 16px 12px; padding: 8px 12px; background: linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(214, 235, 255, .45)); border: 1px solid rgba(255, 255, 255, .9); border-radius: 12px; box-shadow: 0 8px 24px rgba(90, 150, 210, .12); backdrop-filter: blur(10px); }
+    .nav a { color: #1d4e89; text-decoration: none; font-weight: 650; margin-right: 18px; }
+    .workspace { flex: 1; min-height: 0; display: flex; gap: 12px; padding: 0 16px 8px; }
+    .rail { flex: 0 0 200px; display: flex; flex-direction: column; }
+    .shell { background: linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(232, 244, 255, .55)); border: 1px solid rgba(255, 255, 255, .95); border-radius: 14px; box-shadow: 0 12px 28px rgba(80, 140, 200, .12); backdrop-filter: blur(12px); }
+    #weekBoard { flex: 1.4; min-width: 0; display: none; flex-direction: column; }
+    #weekBoard.open { display: flex; }
+    #ask { flex: 1; min-width: 280px; min-height: 0; display: flex; flex-direction: column; background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(168, 208, 250, .7)); border-color: rgba(126, 186, 242, .9); box-shadow: 0 14px 32px rgba(70, 140, 210, .18); }
+    #ask > .hd { background: linear-gradient(90deg, rgba(232, 244, 255, .95), rgba(142, 196, 248, .95)); }
+    #ask > .bd { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .weekbar h2 { margin: 0; font-size: 18px; letter-spacing: .04em; }
+    #weekRange { color: #6d8eae; margin: 4px 0 8px; font-size: 12px; }
+    .pager { display: flex; flex-wrap: wrap; gap: 6px; }
+    .foldbar { width: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 12px; text-align: left; }
+    #weekFold { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 12px; }
+    #weekGrid { flex: 1; min-height: 0; }
+    table.sheet { width: 100%; height: 100%; table-layout: fixed; background: rgba(255, 255, 255, .7); }
+    table.sheet th, table.sheet td { border: 1px solid rgba(170, 205, 235, .75); padding: 2px; text-align: center; font-size: 12px; vertical-align: middle; word-break: break-all; }
+    table.sheet th { background: linear-gradient(180deg, #f7fbff, #d4e8ff); color: #1d4e89; }
+    table.sheet th:first-child, table.sheet td.period { width: 42px; }
+    table.sheet td.today, table.sheet th.today { background: linear-gradient(180deg, #e7f3ff, #b9dcff); }
+    button.cell { width: 100%; height: 100%; min-height: 22px; border-radius: 6px; padding: 2px; white-space: normal; line-height: 1.25; background: linear-gradient(180deg, #f4f9ff, #c5e0ff); color: #16324d; }
+    @media (max-width: 900px) {
+      .workspace { flex-direction: column; overflow: auto; }
+      .rail, #ask, #weekBoard { flex: none; width: 100%; min-width: 0; }
+      #weekBoard.open { min-height: 520px; }
+      #log { min-height: 220px; }
+    }
+    .empty { color: #8aa4bb; font-size: 12px; }
+    .hd { background: linear-gradient(90deg, rgba(255, 255, 255, .55), rgba(186, 220, 255, .85)); color: #1d4e89; font-weight: 700; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, .8); }
+    .hd em { background: linear-gradient(180deg, #7eb6ff, #4d8ef0); color: #fff; font-style: normal; padding: 0 4px; margin-right: 4px; border-radius: 4px; }
+    .bd { padding: 10px 12px; }
+    .item { border-bottom: 1px solid rgba(180, 210, 235, .45); padding: 4px 0; }
+    .meta { color: #6d8eae; }
+    .room { color: #2f7de1; }
+    input, textarea, button, select { font: 14px "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    input, textarea, select { border: 1px solid rgba(160, 200, 235, .7); padding: 6px 8px; width: 100%; box-sizing: border-box; border-radius: 8px; background: rgba(255, 255, 255, .72); color: #1d3a56; }
+    button { background: linear-gradient(180deg, rgba(255, 255, 255, .95), rgba(214, 234, 255, .9)); color: #1d4e89; border: 1px solid rgba(255, 255, 255, .95); border-radius: 999px; padding: 5px 12px; }
+    button.on { background: linear-gradient(180deg, #8ec8ff, #4d92f0); color: #fff; border-color: transparent; }
+    .row { margin: 4px 0; }
+    label { color: #3d6284; }
+    #log { flex: 1; min-height: 120px; overflow: auto; background: rgba(255, 255, 255, .45); border: 1px solid rgba(255, 255, 255, .9); border-radius: 12px; padding: 8px; }
+    .post { border-bottom: 1px solid rgba(180, 210, 235, .4); padding: 6px 2px; }
+    .post .who { color: #2f7de1; font-weight: bold; }
+    .bot { color: #1d4e89; font-weight: bold; }
+    .trace { color: #6d8eae; }
+    .foot { margin: 0 16px 12px; color: #6d8eae; text-align: center; }
+    .chips a { margin-right: 8px; }
+    #topics { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+    #topics[hidden] { display: none; }
+    #syncMsg, #importMsg, #boardNote { color: #2f7de1; }
+    #account { text-align: right; white-space: nowrap; }
+    #loginBtn, #thisWeek { background: linear-gradient(180deg, #8ec8ff, #4d92f0); color: #fff; border-color: transparent; font-weight: 700; box-shadow: 0 8px 18px rgba(77, 146, 240, .28); }
+    button { cursor: pointer; }
+    button:disabled { color: #9bb0c4; cursor: default; }
+    .hd .sidebtn { float: right; background: #fff; color: #1d4e89; border: 1px solid #fff; font-weight: bold; margin-top: -1px; }
+    .mask { display: none; position: fixed; inset: 0; background: rgba(214, 232, 248, .45); z-index: 50; }
+    .mask.open { display: block; }
+    .dialog { display: none; width: min(440px, calc(100vw - 40px)); margin: 48px auto; background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(232, 244, 255, .88)); color: #1d3a56; border: 1px solid rgba(255, 255, 255, .95); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 50px rgba(80, 140, 200, .2); backdrop-filter: blur(16px); }
+    .dialog.open { display: block; }
+    .dialog.wide { width: min(920px, calc(100vw - 40px)); }
+    .menu button { display: block; width: 100%; text-align: left; margin: 0 0 6px; background: rgba(255, 255, 255, .8); }
+    .sub { color: #2f7de1; font-weight: bold; margin: 8px 0 4px; }
+    .dialog .hd { position: relative; }
+    .dialog .x { position: absolute; right: 6px; top: 4px; background: transparent; color: #1d4e89; border: 0; font-weight: bold; }
+    table.grid { width: 100%; border: 1px solid rgba(170, 205, 235, .7); margin: 4px 0; background: rgba(255, 255, 255, .65); }
+    table.grid th, table.grid td { border: 1px solid rgba(180, 210, 235, .55); padding: 3px 4px; vertical-align: top; }
+    table.grid th { background: linear-gradient(180deg, #f7fbff, #d7ebff); color: #1d4e89; }
+  </style>
+</head>
+<body>
+  <div class="top">广东工业大学 · 校园资讯门户　界面 3　本站只运行在你的电脑上</div>
+  <table class="banner">
+    <tr>
+      <td style="width:150px"><div class="logo">广工<br>资讯<small>GDUT DAYS 课表</small></div></td>
+      <td class="slogan">查课室、教师和教学内容<br>考试提醒 · 课堂复盘</td>
+      <td style="width:120px" id="account">
+        <button type="button" id="loginBtn">登录</button>
+      </td>
+    </tr>
+  </table>
+  <div class="nav">
+    <a href="#weekBoard" id="navSchedule">本周课表</a>
+    <a href="#exam" id="navExam">考试提醒</a>
+    <a href="#rating" id="navRating">课程评价</a>
+    <a href="#ask">咨询台</a>
+  </div>
+  <div id="mask" class="mask">
+    <div class="dialog" id="loginDialog">
+      <div class="hd">登录 <button type="button" class="x" id="closeLogin">关闭</button></div>
+      <div class="bd">
+        <div class="row">在你自己的电脑上可以打开学校登录页，成功后自动导入课表。服务器上请载入示例课表，或粘贴教务 Cookie。</div>
+        <div class="row"><label>学期代码</label> <input id="semester" value="202601" style="width:80px" /></div>
+        <div class="row">
+          <button type="button" id="loadSample">载入示例课表</button>
+          <button type="button" id="openLogin">打开学校登录页</button>
+          <button type="button" id="doSync">用 Cookie 登录</button>
+          <button type="button" id="logoutBtn">退出</button>
+        </div>
+        <div class="row"><textarea id="cookie" rows="3" placeholder="或粘贴教务 Cookie"></textarea></div>
+        <div id="syncMsg"></div>
+      </div>
+    </div>
+    <div class="dialog" id="refreshDialog">
+      <div class="hd">导入刷新 <button type="button" class="x" id="closeRefresh">关闭</button></div>
+      <div class="bd">
+        <div class="row">课表有变动时，用已保存的教务登录重新导入。登录过期就再打开学校登录页。</div>
+        <div class="row">
+          <button type="button" id="doRefresh">开始导入刷新</button>
+          <button type="button" id="refreshLogin">打开学校登录页</button>
+        </div>
+        <div id="importMsg"></div>
+      </div>
+    </div>
+    <div class="dialog wide" id="scheduleDialog">
+      <div class="hd">今日 / 明日课表 <button type="button" class="x" id="closeSchedule">关闭</button></div>
+      <div class="bd" id="board">点右上角「登录」。登录成功后自动导入课表。</div>
+    </div>
+    <div class="dialog wide" id="examDialog">
+      <div class="hd"><em>热</em>考试提醒 <button type="button" class="x" id="closeExam">关闭</button></div>
+      <div class="bd">
+        <div id="exams">导入后显示。</div>
+        <div class="sub">考试成绩</div>
+        <div class="row">成绩从教务导入。分析只看已导入的百分制成绩。</div>
+        <button type="button" id="analyzeGrade">成绩分析</button>
+        <div id="gradeMsg"></div>
+        <div id="gradeAnalysis"></div>
+        <div id="gradeList"></div>
+      </div>
+    </div>
+    <div class="dialog wide" id="ratingDialog">
+      <div class="hd">课程评价 <button type="button" class="x" id="closeRating">关闭</button></div>
+      <div class="bd">
+        <div class="row">评价会按课程、按老师分开归类，并写入检索索引。</div>
+        <div class="row"><label>课程</label> <input id="rateCourse" list="courseNames" /></div>
+        <div class="row"><label>教师</label> <input id="rateTeacher" list="teacherNames" /></div>
+        <div class="row"><label>评分</label>
+          <select id="rateScore" style="width:80px">
+            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="3">3</option>
+            <option value="2">2</option>
+            <option value="1">1</option>
+          </select>
+        </div>
+        <div class="row"><textarea id="rateComment" rows="3" placeholder="评语"></textarea></div>
+        <datalist id="courseNames"></datalist>
+        <datalist id="teacherNames"></datalist>
+        <button type="button" id="saveRating">提交评价</button>
+        <div id="rateMsg"></div>
+        <div class="sub">按课程</div>
+        <div id="rateByCourse"></div>
+        <div class="sub">按老师</div>
+        <div id="rateByTeacher"></div>
+      </div>
+    </div>
+    <div class="dialog" id="voiceDialog">
+      <div class="hd">语音 <button type="button" class="x" id="closeVoice">关闭</button></div>
+      <div class="bd" id="voiceBody">正在听，请说话。</div>
+    </div>
+    <div class="dialog" id="courseDialog">
+      <div class="hd">课程信息 <button type="button" class="x" id="closeCourse">关闭</button></div>
+      <div class="bd" id="courseBody"></div>
+    </div>
+    <div class="dialog wide" id="replyDialog">
+      <div class="hd">回答 <button type="button" class="x" id="closeReply">关闭</button></div>
+      <div class="bd" id="replyBody">还没有回答。</div>
+    </div>
+  </div>
+  <div class="workspace">
+    <aside class="shell rail">
+      <button type="button" id="toggleWeek" class="foldbar">
+        <span>课表</span>
+        <span id="foldMark">展开</span>
+      </button>
+      <div class="bd">
+        <div class="pager">
+          <button type="button" id="openSchedule">今日 / 明日</button>
+          <button type="button" id="openExam">考试提醒</button>
+          <button type="button" id="openGrade">考试成绩</button>
+          <button type="button" id="openRating">课程评价</button>
+          <button type="button" id="loadSampleRail">载入示例课表</button>
+          <button type="button" id="importBtn">导入刷新</button>
+        </div>
+      </div>
+    </aside>
+    <section class="shell" id="weekBoard">
+      <div id="weekFold">
+        <div class="pager">
+          <strong id="weekTitle">本周课表</strong>
+          <span id="weekRange">登录后显示本周课程</span>
+          <button type="button" id="prevWeek">上一周</button>
+          <button type="button" id="thisWeek">本周课表</button>
+          <button type="button" id="nextWeek">下一周</button>
+        </div>
+        <div id="weekGrid"></div>
+        <div id="boardNote"></div>
+      </div>
+    </section>
+    <section class="shell" id="ask">
+      <div class="hd" id="askTitle">咨询台</div>
+      <div class="bd">
+        <div class="pager">
+          <button type="button" id="modeCampus" class="on">校园咨询</button>
+          <button type="button" id="modeKnowledge">课程问答</button>
+        </div>
+        <div id="topics" hidden></div>
+        <div class="chips" id="chips"></div>
+        <button type="button" id="older" hidden>查看更早的对话</button>
+        <div id="log"></div>
+        <form id="chat">
+          <div class="row"><textarea id="input" rows="3" placeholder="例如：明天软件工程在哪个课室，老师是谁？"></textarea></div>
+          <button type="submit">发送</button>
+          <button type="button" id="voice">语音</button>
+          <button type="button" id="speak">朗读</button>
+          <span id="status" class="meta"></span>
+        </form>
+      </div>
+    </section>
+  </div>
+  <div class="foot">广工资讯 · 课表、考试和复盘保存在本机 data/campus.db<br>不保存教务密码，不同步选课</div>
+  <script>
+    const account = document.querySelector("#account");
+    const log = document.querySelector("#log");
+    const input = document.querySelector("#input");
+    const apiBase = location.pathname === "/campus" || location.pathname.startsWith("/campus/") ? "/campus" : "";
+    function api(path) { return apiBase + path; }
+    let user = null;
+    let speakOn = false;
+    let lastReply = "";
+    const sessionKey = "campus-portal-session";
+    let campusSessionId = localStorage.getItem(sessionKey) || crypto.randomUUID();
+    let chatMode = localStorage.getItem("campus-chat-mode") === "knowledge" ? "knowledge" : "campus";
+    let knowledgeTopic = localStorage.getItem("campus-knowledge-topic") || "";
+    let courseTopics = [];
+    localStorage.setItem(sessionKey, campusSessionId);
+    function topicSession(name) {
+      let map = {};
+      try { map = JSON.parse(localStorage.getItem("campus-knowledge-topics") || "{}"); } catch (err) { map = {}; }
+      if (!map[name]) map[name] = crypto.randomUUID();
+      localStorage.setItem("campus-knowledge-topics", JSON.stringify(map));
+      return map[name];
+    }
+    function activeSession() {
+      if (chatMode === "knowledge") return knowledgeTopic ? topicSession(knowledgeTopic) : "";
+      return campusSessionId;
+    }
+
+    function post(url, body) {
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }).then(async (response) => {
+        const data = await response.json();
+        if (!response.ok && !data.error) data.error = "请求失败";
+        return data;
+      });
+    }
+
+    function line(text, cls) {
+      const div = document.createElement("div");
+      div.className = cls || "item";
+      div.textContent = text;
+      return div;
+    }
+
+    function setStatus(text) {
+      ["#syncMsg", "#importMsg", "#boardNote"].forEach((selector) => {
+        const node = document.querySelector(selector);
+        if (node) node.textContent = text || "";
+      });
+    }
+
+    function renderAccount() {
+      document.querySelector("#loginBtn").textContent = user ? "已登录" : "登录";
+    }
+
+    const panels = ["login", "refresh", "schedule", "exam", "rating", "voice", "reply", "course"];
+
+    function openModal(name) {
+      document.querySelector("#mask").classList.add("open");
+      panels.forEach((id) => {
+        const node = document.querySelector("#" + id + "Dialog");
+        if (node) node.classList.toggle("open", id === name);
+      });
+    }
+
+    function closeModal() {
+      document.querySelector("#mask").classList.remove("open");
+      panels.forEach((id) => {
+        const node = document.querySelector("#" + id + "Dialog");
+        if (node) node.classList.remove("open");
+      });
+    }
+
+    async function showPanel(name) {
+      if (!user) {
+        const ready = await ensureSession();
+        if (!ready) return;
+      }
+      if (name === "rating") await loadRatings();
+      if (name === "exam") await loadGrades();
+      openModal(name);
+    }
+
+    function semesterCode() {
+      return (document.querySelector("#semester").value || "202601").trim();
+    }
+
+    async function ensureSession() {
+      if (user) return true;
+      try {
+        const me = await fetch(api("/api/me")).then((response) => response.json());
+        if (me.user) {
+          user = me.user;
+          renderAccount();
+          return true;
+        }
+      } catch (err) {
+        setStatus("页面请求失败，请确认本机服务还开着");
+        return false;
+      }
+      let studentNo = localStorage.getItem("campus-local-no");
+      let password = localStorage.getItem("campus-local-pass");
+      if (!studentNo || !password) {
+        studentNo = "u" + Math.random().toString(36).slice(2, 10);
+        password = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        localStorage.setItem("campus-local-no", studentNo);
+        localStorage.setItem("campus-local-pass", password);
+      }
+      let data = await post(api("/api/login"), { student_no: studentNo, password });
+      if (!data.ok) data = await post(api("/api/register"), { student_no: studentNo, password, display_name: "同学" });
+      if (!data.ok) {
+        studentNo = "u" + Math.random().toString(36).slice(2, 10);
+        password = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        localStorage.setItem("campus-local-no", studentNo);
+        localStorage.setItem("campus-local-pass", password);
+        data = await post(api("/api/register"), { student_no: studentNo, password, display_name: "同学" });
+      }
+      if (!data.ok) {
+        setStatus(data.error || "本机会话没有就绪");
+        return false;
+      }
+      user = data.user;
+      renderAccount();
+      return true;
+    }
+
+    function isTableLine(line) {
+      const text = line.trim();
+      return text.startsWith("|") && text.endsWith("|") && text.slice(1, -1).includes("|");
+    }
+
+    function tableCells(line) {
+      return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+    }
+
+    function renderRich(container, text) {
+      const lines = String(text || "").split("\n");
+      let index = 0;
+      while (index < lines.length) {
+        const next = lines[index + 1] || "";
+        if (isTableLine(lines[index]) && /^\|\s*:?-{3,}/.test(next.trim())) {
+          const headers = tableCells(lines[index]);
+          index += 2;
+          const rows = [];
+          while (index < lines.length && isTableLine(lines[index])) {
+            rows.push(tableCells(lines[index]));
+            index += 1;
+          }
+          const table = document.createElement("table");
+          table.className = "grid";
+          const head = document.createElement("tr");
+          headers.forEach((cell) => {
+            const th = document.createElement("th");
+            th.textContent = cell;
+            head.appendChild(th);
+          });
+          const thead = document.createElement("thead");
+          thead.appendChild(head);
+          const tbody = document.createElement("tbody");
+          rows.forEach((row) => {
+            const tr = document.createElement("tr");
+            row.forEach((cell) => {
+              const td = document.createElement("td");
+              td.textContent = cell;
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+          table.append(thead, tbody);
+          container.appendChild(table);
+          continue;
+        }
+        if (lines[index] !== "") {
+          const line = document.createElement("div");
+          line.textContent = lines[index];
+          container.appendChild(line);
+        }
+        index += 1;
+      }
+    }
+
+    let historyLock = false;
+    let hasMoreHistory = false;
+    let oldestMessageId = 0;
+
+    function makePost(role, text, traces, id) {
+      const box = document.createElement("div");
+      box.className = "post";
+      if (id) box.dataset.id = String(id);
+      const who = document.createElement("div");
+      who.className = role === "user" ? "who" : "bot";
+      who.textContent = role === "user" ? "网友" : "资讯助手";
+      const body = document.createElement("div");
+      if (role === "assistant") renderRich(body, text);
+      else body.textContent = text;
+      box.append(who, body);
+      if (traces && traces.length) {
+        const note = document.createElement("div");
+        note.className = "trace";
+        note.textContent = "调用：" + traces.map((item) => item.tool).join("、");
+        box.appendChild(note);
+      }
+      return box;
+    }
+
+    function addPost(role, text, traces, id) {
+      const box = makePost(role, text, traces, id);
+      log.appendChild(box);
+      log.scrollTop = log.scrollHeight;
+      return box;
+    }
+
+    function markHistory(data) {
+      hasMoreHistory = !!data.has_more;
+      if (data.messages && data.messages.length) oldestMessageId = data.messages[0].id;
+      document.querySelector("#older").hidden = !hasMoreHistory;
+    }
+
+    async function loadHistory(before) {
+      if (chatMode === "knowledge" && !knowledgeTopic) {
+        if (!before) {
+          log.replaceChildren();
+          addPost("assistant", "先导入课表。课程问答会按每门课分成不同主题。");
+          hasMoreHistory = false;
+          document.querySelector("#older").hidden = true;
+        }
+        return;
+      }
+      const query = api("/api/messages") + "?session_id=" + encodeURIComponent(activeSession()) + "&limit=12" + (before ? "&before=" + before : "");
+      const data = await fetch(query).then((response) => response.json());
+      if (!data.ok) return;
+      const frag = document.createDocumentFragment();
+      (data.messages || []).forEach((item) => frag.appendChild(makePost(item.role, item.content, null, item.id)));
+      if (before) {
+        const prev = log.scrollHeight;
+        log.insertBefore(frag, log.firstChild);
+        log.scrollTop = log.scrollHeight - prev;
+      } else {
+        log.replaceChildren(frag);
+        if (!(data.messages || []).length) {
+          addPost("assistant", "点右上角「登录」。登录会保持在这台电脑上，成功后自动导入课表。课表有变动时，再点「导入刷新」。");
+        } else {
+          log.scrollTop = log.scrollHeight;
+        }
+      }
+      markHistory(data);
+    }
+
+    function grid(headers, rows) {
+      const table = document.createElement("table");
+      table.className = "grid";
+      const head = document.createElement("tr");
+      headers.forEach((cell) => {
+        const th = document.createElement("th");
+        th.textContent = cell;
+        head.appendChild(th);
+      });
+      const thead = document.createElement("thead");
+      thead.appendChild(head);
+      const tbody = document.createElement("tbody");
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        row.forEach((cell) => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.append(thead, tbody);
+      return table;
+    }
+
+    function fillChoices(courses) {
+      const names = document.querySelector("#courseNames");
+      const teachers = document.querySelector("#teacherNames");
+      names.replaceChildren();
+      teachers.replaceChildren();
+      const seenCourse = new Set();
+      const seenTeacher = new Set();
+      (courses || []).forEach((item) => {
+        if (item.name && !seenCourse.has(item.name)) {
+          seenCourse.add(item.name);
+          const option = document.createElement("option");
+          option.value = item.name;
+          names.appendChild(option);
+        }
+        if (item.teacher && !seenTeacher.has(item.teacher)) {
+          seenTeacher.add(item.teacher);
+          const option = document.createElement("option");
+          option.value = item.teacher;
+          teachers.appendChild(option);
+        }
+      });
+    }
+
+    async function refresh() {
+      if (!user) return;
+      const response = await fetch(api("/api/overview"));
+      const data = await response.json();
+      const board = document.querySelector("#board");
+      const exams = document.querySelector("#exams");
+      board.replaceChildren();
+      exams.replaceChildren();
+      if (!data.ok) {
+        board.textContent = data.error || "课表读取失败";
+        return;
+      }
+      document.querySelector("#status").textContent = data.semester_name + " 第" + data.today.week + "周";
+      [["今天 " + data.today.date + " " + data.today.weekday_name, data.today.courses], ["明天 " + data.tomorrow.date, data.tomorrow.courses]].forEach(([label, courses]) => {
+        board.appendChild(line(label, "meta"));
+        if (!courses.length) board.appendChild(line("没有课"));
+        else board.appendChild(grid(["时间", "课程", "教师", "课室", "教学内容"], courses.map((item) => [item.start_time + "-" + item.end_time, item.name, item.teacher, item.classroom, item.content || ""])));
+      });
+      const shown = (data.reminders && data.reminders.length) ? data.reminders : (data.upcoming_exams || []);
+      if (!shown.length) exams.textContent = "还没有即将到来的考试。";
+      else exams.appendChild(grid(["课程", "时间", "地点", "还有几天", "备注"], shown.map((item) => [item.course_name, item.exam_at, item.location, String(item.days_left), item.note || ""])));
+      const catalog = data.catalog || [].concat(data.today.courses || [], data.tomorrow.courses || []);
+      fillChoices(catalog);
+      renderTopics(catalog);
+      document.querySelector("#boardNote").textContent = "今天 " + (data.today.courses || []).length + " 门课";
+      await loadWeek(weekOffset, false);
+    }
+
+    let weekOffset = 0;
+
+    const periodSlots = [
+      ["08:30", "09:15"], ["09:20", "10:05"], ["10:25", "11:10"], ["11:15", "12:00"],
+      ["14:00", "14:45"], ["14:50", "15:35"], ["15:55", "16:40"], ["16:45", "17:30"],
+      ["19:00", "19:45"], ["19:50", "20:35"], ["20:45", "21:30"], ["21:35", "22:20"]
+    ];
+
+    function minutesOf(value) {
+      const parts = String(value || "0:0").split(":");
+      return Number(parts[0]) * 60 + Number(parts[1] || 0);
+    }
+
+    function spanOf(item) {
+      const start = minutesOf(item.start_time);
+      const end = minutesOf(item.end_time);
+      let first = -1;
+      let last = -1;
+      periodSlots.forEach((pair, index) => {
+        const from = minutesOf(pair[0]);
+        const to = minutesOf(pair[1]);
+        if (from < end && to > start) {
+          if (first < 0) first = index;
+          last = index;
+        }
+      });
+      if (first < 0) return null;
+      return { first, last };
+    }
+
+    function setWeekOpen(open) {
+      document.querySelector("#weekBoard").classList.toggle("open", open);
+      document.querySelector("#foldMark").textContent = open ? "收起" : "展开";
+    }
+
+    function showCourse(block) {
+      const body = document.querySelector("#courseBody");
+      body.replaceChildren();
+      [
+        ["课程", block.item.name],
+        ["教师", block.item.teacher],
+        ["课室", block.item.classroom],
+        ["星期", block.day.weekday_name],
+        ["日期", block.day.date],
+        ["时间", block.item.start_time + " - " + block.item.end_time],
+        ["节次", "第" + (block.first + 1) + "节到第" + (block.last + 1) + "节"],
+        ["教学内容", block.item.content || "课表里还没写教学内容"]
+      ].forEach(([label, value]) => {
+        const row = document.createElement("div");
+        row.className = "item";
+        row.textContent = label + "：" + value;
+        body.appendChild(row);
+      });
+      openModal("course");
+    }
+
+    function renderWeek(data) {
+      const grid = document.querySelector("#weekGrid");
+      const title = document.querySelector("#weekTitle");
+      const range = document.querySelector("#weekRange");
+      grid.replaceChildren();
+      if (!data.ok) {
+        title.textContent = "本周课表";
+        range.textContent = data.error || "课表读取失败";
+        return;
+      }
+      title.textContent = data.week ? ("第 " + data.week + " 周") : "本周课表";
+      range.textContent = data.week_start ? (data.week_start + " — " + data.week_end) : "这一周还没有排课";
+      const days = data.days || [];
+      if (!days.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "这一周还没有排课";
+        grid.appendChild(empty);
+        return;
+      }
+      const placed = Array.from({ length: periodSlots.length }, () => Array(days.length).fill(false));
+      const blocks = [];
+      days.forEach((day, dayIndex) => {
+        day.courses.forEach((item) => {
+          const span = spanOf(item);
+          if (!span) return;
+          blocks.push({ dayIndex, item, day, first: span.first, last: span.last });
+          for (let row = span.first; row <= span.last; row += 1) placed[row][dayIndex] = true;
+        });
+      });
+      const table = document.createElement("table");
+      table.className = "sheet";
+      const head = document.createElement("tr");
+      const corner = document.createElement("th");
+      corner.textContent = "节次";
+      head.appendChild(corner);
+      days.forEach((day) => {
+        const th = document.createElement("th");
+        th.textContent = day.weekday_name;
+        if (day.date === data.today) th.className = "today";
+        head.appendChild(th);
+      });
+      const thead = document.createElement("thead");
+      thead.appendChild(head);
+      const tbody = document.createElement("tbody");
+      for (let row = 0; row < periodSlots.length; row += 1) {
+        const tr = document.createElement("tr");
+        const label = document.createElement("th");
+        label.textContent = String(row + 1);
+        tr.appendChild(label);
+        for (let dayIndex = 0; dayIndex < days.length; dayIndex += 1) {
+          const block = blocks.find((item) => item.dayIndex === dayIndex && item.first === row);
+          if (block) {
+            const cell = document.createElement("td");
+            cell.rowSpan = block.last - block.first + 1;
+            if (block.day.date === data.today) cell.className = "today";
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "cell";
+            button.textContent = block.item.name;
+            button.addEventListener("click", () => showCourse(block));
+            cell.appendChild(button);
+            tr.appendChild(cell);
+          } else if (!placed[row][dayIndex]) {
+            const cell = document.createElement("td");
+            if (days[dayIndex].date === data.today) cell.className = "today";
+            tr.appendChild(cell);
+          }
+        }
+        tbody.appendChild(tr);
+      }
+      table.append(thead, tbody);
+      grid.appendChild(table);
+    }
+
+    async function loadWeek(offset, scroll) {
+      if (!user) {
+        const ready = await ensureSession();
+        if (!ready) return;
+      }
+      weekOffset = offset;
+      const data = await fetch(api("/api/week?offset=") + offset).then((response) => response.json());
+      renderWeek(data);
+      if (scroll) setWeekOpen(true);
+    }
+
+    function groupTable(titleNode, groups, columns, pick) {
+      titleNode.replaceChildren();
+      const names = Object.keys(groups || {});
+      if (!names.length) {
+        titleNode.textContent = "还没有评价。";
+        return;
+      }
+      names.forEach((name) => {
+        titleNode.appendChild(line(name, "meta"));
+        titleNode.appendChild(grid(columns, groups[name].map(pick)));
+      });
+    }
+
+    async function loadRatings() {
+      const data = await fetch(api("/api/evaluations")).then((response) => response.json());
+      if (!data.ok) {
+        document.querySelector("#rateMsg").textContent = data.error || "评价读取失败";
+        return;
+      }
+      groupTable(document.querySelector("#rateByCourse"), data.by_course, ["教师", "评分", "评语", "时间"], (item) => [item.teacher, String(item.rating), item.comment, item.created_at]);
+      groupTable(document.querySelector("#rateByTeacher"), data.by_teacher, ["课程", "评分", "评语", "时间"], (item) => [item.course_name, String(item.rating), item.comment, item.created_at]);
+    }
+
+    async function loadGrades() {
+      const data = await fetch(api("/api/grades")).then((response) => response.json());
+      const box = document.querySelector("#gradeList");
+      box.replaceChildren();
+      if (!data.ok) {
+        document.querySelector("#gradeMsg").textContent = data.error || "成绩读取失败";
+        return;
+      }
+      if (!(data.items || []).length) {
+        box.textContent = "导入刷新后，这里显示教务成绩。";
+        return;
+      }
+      box.appendChild(grid(["课程", "项目", "总分", "满分", "分项"], data.items.map((item) => [
+        item.course_name,
+        item.title,
+        item.full_mark ? String(item.total) : ((item.detail && item.detail["成绩"]) || ""),
+        item.full_mark ? String(item.full_mark) : "",
+        item.detail_text || "",
+      ])));
+    }
+
+    async function ask(text) {
+      if (!user) {
+        const ready = await ensureSession();
+        if (!ready) { addPost("assistant", "请先点右上角登录。"); return; }
+      }
+      const message = text.trim();
+      if (!message) return;
+      if (chatMode === "knowledge" && !knowledgeTopic) {
+        addPost("assistant", "先导入课表。课程问答会按每门课分成不同主题。");
+        return;
+      }
+      const userBox = addPost("user", message);
+      input.value = "";
+      const data = await post(api("/api/chat"), { session_id: activeSession(), message, mode: chatMode, topic: chatMode === "knowledge" ? knowledgeTopic : "" });
+      if (data.user_message_id) userBox.dataset.id = String(data.user_message_id);
+      lastReply = data.reply || data.error || "没有得到回答";
+      addPost("assistant", lastReply, data.traces || [], data.assistant_message_id);
+      const replyBody = document.querySelector("#replyBody");
+      replyBody.replaceChildren();
+      renderRich(replyBody, lastReply);
+      openModal("reply");
+      if (speakOn && window.speechSynthesis) speechSynthesis.speak(new SpeechSynthesisUtterance(lastReply));
+    }
+
+    document.querySelector("#chat").addEventListener("submit", (event) => {
+      event.preventDefault();
+      ask(input.value);
+    });
+    function renderTopics(courses) {
+      const seen = new Set();
+      courseTopics = [];
+      (courses || []).forEach((item) => {
+        const name = item.name || item.course_name || "";
+        if (name && !seen.has(name)) {
+          seen.add(name);
+          courseTopics.push(name);
+        }
+      });
+      if (knowledgeTopic && !courseTopics.includes(knowledgeTopic)) courseTopics.unshift(knowledgeTopic);
+      paintTopics();
+    }
+
+    function paintTopics() {
+      const box = document.querySelector("#topics");
+      box.replaceChildren();
+      const show = chatMode === "knowledge";
+      box.hidden = !show;
+      if (!show) return;
+      if (!courseTopics.length) {
+        box.textContent = "导入课表后，每门课会单独成为一个问答主题。";
+        return;
+      }
+      courseTopics.forEach((name) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = name;
+        button.classList.toggle("on", name === knowledgeTopic);
+        button.addEventListener("click", () => selectTopic(name));
+        box.appendChild(button);
+      });
+    }
+
+    async function selectTopic(name) {
+      if (name && !courseTopics.includes(name)) courseTopics.unshift(name);
+      knowledgeTopic = name;
+      localStorage.setItem("campus-knowledge-topic", name);
+      if (chatMode !== "knowledge") chatMode = "knowledge";
+      localStorage.setItem("campus-chat-mode", chatMode);
+      document.querySelector("#askTitle").textContent = "课程问答 · " + name;
+      input.placeholder = "例如：" + name + "这节课在讲什么？";
+      document.querySelector("#modeCampus").classList.toggle("on", false);
+      document.querySelector("#modeKnowledge").classList.toggle("on", true);
+      paintTopics();
+      renderChips();
+      await loadHistory(0);
+    }
+
+    function renderChips() {
+      const box = document.querySelector("#chips");
+      box.replaceChildren();
+      const prompts = chatMode === "knowledge" && knowledgeTopic
+        ? [knowledgeTopic + "这门课在讲什么？", "推荐一门" + knowledgeTopic + "公开课", knowledgeTopic + "该怎么复习？"]
+        : ["明天有什么课？课室和老师是谁？", "软件工程讲什么？", "最近有哪些考试要提醒？", "软件工程的评价怎么样"];
+      prompts.forEach((prompt) => {
+        const link = document.createElement("a");
+        link.href = "#ask";
+        link.textContent = prompt;
+        link.addEventListener("click", (event) => { event.preventDefault(); ask(prompt); });
+        box.append(link, document.createTextNode(" "));
+      });
+    }
+
+    async function setChatMode(mode, reload) {
+      chatMode = mode === "knowledge" ? "knowledge" : "campus";
+      localStorage.setItem("campus-chat-mode", chatMode);
+      if (chatMode === "knowledge" && !knowledgeTopic && courseTopics.length) knowledgeTopic = courseTopics[0];
+      document.querySelector("#askTitle").textContent = chatMode === "knowledge" && knowledgeTopic ? "课程问答 · " + knowledgeTopic : (chatMode === "knowledge" ? "课程问答" : "咨询台");
+      input.placeholder = chatMode === "knowledge" && knowledgeTopic
+        ? "例如：" + knowledgeTopic + "这节课在讲什么？"
+        : "例如：明天软件工程在哪个课室，老师是谁？";
+      document.querySelector("#modeCampus").classList.toggle("on", chatMode === "campus");
+      document.querySelector("#modeKnowledge").classList.toggle("on", chatMode === "knowledge");
+      paintTopics();
+      renderChips();
+      if (reload !== false) await loadHistory(0);
+    }
+    function watchImport(button) {
+      const timer = setInterval(async () => {
+        let status;
+        try {
+          status = await fetch(api("/api/gdut-browser-sync")).then((response) => response.json());
+        } catch (err) {
+          clearInterval(timer);
+          setStatus("页面请求失败，请确认本机服务还开着");
+          if (button) { button.disabled = false; button.textContent = button.dataset.label || button.textContent; }
+          return;
+        }
+        setStatus(status.message || "");
+        if (status.state === "done") {
+          clearInterval(timer);
+          closeModal();
+          await refresh();
+          if (button) { button.disabled = false; button.textContent = button.dataset.label; }
+        }
+        if (status.state === "error" || status.state === "idle") {
+          clearInterval(timer);
+          if (button) { button.disabled = false; button.textContent = button.dataset.label; }
+        }
+      }, 1000);
+    }
+
+    const schoolLogin = "https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin";
+
+    function openSchoolLogin() {
+      const popup = window.open(schoolLogin, "gdutLogin");
+      if (!popup) {
+        setStatus("浏览器拦住了学校登录页。请允许弹窗后再点一次。");
+        return false;
+      }
+      return true;
+    }
+
+    async function beginBrowserImport(button) {
+      if (!openSchoolLogin()) return;
+      setStatus("已打开学校教务登录页。登录后在该页按 F12，打开网络，复制请求头里的 Cookie，贴到下面再点「用 Cookie 登录」。浏览器不允许本站读取另一个网站的 Cookie。");
+      const box = document.querySelector("#cookie");
+      if (box) box.focus();
+      if (!await ensureSession()) return;
+      let started;
+      try {
+        started = await post(api("/api/gdut-browser-sync"), { semester: semesterCode() });
+      } catch (err) {
+        return;
+      }
+      if (!started.ok) return;
+      button.disabled = true;
+      watchImport(button);
+    }
+
+    document.querySelector("#loginBtn").dataset.label = "登录";
+    document.querySelector("#openLogin").dataset.label = "打开学校登录页";
+    document.querySelector("#refreshLogin").dataset.label = "打开学校登录页";
+    document.querySelector("#importBtn").dataset.label = "导入刷新";
+    document.querySelector("#loginBtn").addEventListener("click", () => openModal("login"));
+    document.querySelector("#importBtn").addEventListener("click", () => openModal("refresh"));
+    document.querySelector("#openSchedule").addEventListener("click", () => showPanel("schedule"));
+    document.querySelector("#openExam").addEventListener("click", () => showPanel("exam"));
+    document.querySelector("#openGrade").addEventListener("click", () => showPanel("exam"));
+    document.querySelector("#analyzeGrade").addEventListener("click", async () => {
+      const box = document.querySelector("#gradeAnalysis");
+      box.textContent = "正在分析已导入的成绩。";
+      const data = await fetch(api("/api/grade-analysis")).then((response) => response.json());
+      box.replaceChildren();
+      if (!data.ok) {
+        document.querySelector("#gradeMsg").textContent = data.error || "分析失败";
+        return;
+      }
+      const summary = document.createElement("div");
+      summary.textContent = data.summary || "";
+      box.appendChild(summary);
+      const weak = data.weak || [];
+      if (weak.length) {
+        box.appendChild(grid(["课程", "项目", "百分制"], weak.map((item) => [item.course_name, item.title, String(item.percent)])));
+        const next = document.createElement("button");
+        next.type = "button";
+        next.textContent = "用课程问答看「" + weak[0].course_name + "」";
+        next.addEventListener("click", async () => {
+          closeModal();
+          await selectTopic(weak[0].course_name);
+          ask("请讲解" + weak[0].course_name + "，并推荐 B 站课程");
+        });
+        box.appendChild(next);
+      }
+    });
+    document.querySelector("#modeCampus").addEventListener("click", () => setChatMode("campus"));
+    document.querySelector("#modeKnowledge").addEventListener("click", () => setChatMode("knowledge"));
+    renderChips();
+    setChatMode(chatMode, false);
+    document.querySelector("#older").addEventListener("click", async () => {
+      if (historyLock || !hasMoreHistory) return;
+      historyLock = true;
+      await loadHistory(oldestMessageId);
+      historyLock = false;
+    });
+    log.addEventListener("scroll", async () => {
+      if (historyLock || !hasMoreHistory || log.scrollTop > 24) return;
+      historyLock = true;
+      await loadHistory(oldestMessageId);
+      historyLock = false;
+    });
+    document.querySelector("#openRating").addEventListener("click", () => showPanel("rating"));
+    document.querySelector("#toggleWeek").addEventListener("click", () => {
+      const open = !document.querySelector("#weekBoard").classList.contains("open");
+      setWeekOpen(open);
+      if (open) loadWeek(weekOffset, false);
+    });
+    document.querySelector("#navSchedule").addEventListener("click", (event) => { event.preventDefault(); loadWeek(0, true); });
+    document.querySelector("#prevWeek").addEventListener("click", () => loadWeek(weekOffset - 1, false));
+    document.querySelector("#nextWeek").addEventListener("click", () => loadWeek(weekOffset + 1, false));
+    document.querySelector("#thisWeek").addEventListener("click", () => loadWeek(0, true));
+    document.querySelector("#navExam").addEventListener("click", (event) => { event.preventDefault(); showPanel("exam"); });
+    document.querySelector("#navRating").addEventListener("click", (event) => { event.preventDefault(); showPanel("rating"); });
+    ["closeLogin", "closeRefresh", "closeSchedule", "closeExam", "closeRating", "closeVoice", "closeReply", "closeCourse"].forEach((id) => {
+      document.querySelector("#" + id).addEventListener("click", closeModal);
+    });
+    document.querySelector("#mask").addEventListener("click", (event) => {
+      if (event.target.id === "mask") closeModal();
+    });
+    async function loadSampleSchedule() {
+      if (!await ensureSession()) return;
+      let data;
+      try {
+        data = await post(api("/api/sample"), {});
+      } catch (err) {
+        setStatus("页面请求失败，请确认服务还开着");
+        return;
+      }
+      if (!data.ok) { setStatus(data.error || "示例课表没有载入"); return; }
+      setStatus("已载入示例课表 " + data.courses + " 门课");
+      await refresh();
+      closeModal();
+    }
+    document.querySelector("#loadSample").addEventListener("click", loadSampleSchedule);
+    document.querySelector("#loadSampleRail").addEventListener("click", loadSampleSchedule);
+    document.querySelector("#openLogin").addEventListener("click", () => beginBrowserImport(document.querySelector("#openLogin")));
+    document.querySelector("#refreshLogin").addEventListener("click", () => beginBrowserImport(document.querySelector("#refreshLogin")));
+    document.querySelector("#doRefresh").addEventListener("click", async () => {
+      const button = document.querySelector("#doRefresh");
+      button.disabled = true;
+      setStatus("正在用已保存的登录导入课表");
+      if (!await ensureSession()) { button.disabled = false; return; }
+      let data;
+      try {
+        data = await post(api("/api/gdut-refresh"), { semester: semesterCode() });
+      } catch (err) {
+        setStatus("页面请求失败，请确认本机服务还开着");
+        button.disabled = false;
+        return;
+      }
+      button.disabled = false;
+      if (!data.ok) { setStatus(data.error || "需要重新登录后再导入"); return; }
+      setStatus("已导入 " + data.courses + " 门课" + (data.grades ? "，成绩 " + data.grades + " 条" : ""));
+      await refresh();
+      closeModal();
+    });
+    document.querySelector("#doSync").addEventListener("click", async () => {
+      const box = document.querySelector("#cookie");
+      const button = document.querySelector("#doSync");
+      button.disabled = true;
+      if (!await ensureSession()) { button.disabled = false; return; }
+      let data;
+      try {
+        data = await post(api("/api/gdut-sync"), { semester: semesterCode(), cookie: box.value });
+      } catch (err) {
+        setStatus("页面请求失败，请确认本机服务还开着");
+        button.disabled = false;
+        return;
+      }
+      box.value = "";
+      button.disabled = false;
+      if (!data.ok) { setStatus(data.error || "同步失败"); return; }
+      setStatus("已自动导入 " + data.courses + " 门课" + (data.grades ? "，成绩 " + data.grades + " 条" : ""));
+      closeModal();
+      refresh();
+    });
+    document.querySelector("#logoutBtn").addEventListener("click", async () => {
+      await post(api("/api/logout"), {});
+      localStorage.removeItem("campus-local-no");
+      localStorage.removeItem("campus-local-pass");
+      user = null;
+      renderAccount();
+      document.querySelector("#board").textContent = "点右上角「登录」。登录成功后自动导入课表。";
+      document.querySelector("#exams").textContent = "导入后显示。";
+      document.querySelector("#boardNote").textContent = "";
+      document.querySelector("#weekGrid").replaceChildren();
+      document.querySelector("#weekTitle").textContent = "本周课表";
+      document.querySelector("#weekRange").textContent = "登录后显示本周课程";
+      setWeekOpen(false);
+      weekOffset = 0;
+      closeModal();
+      setStatus("");
+    });
+    document.querySelector("#saveRating").addEventListener("click", async () => {
+      const button = document.querySelector("#saveRating");
+      button.disabled = true;
+      if (!await ensureSession()) { button.disabled = false; return; }
+      const data = await post(api("/api/evaluations"), {
+        course_name: document.querySelector("#rateCourse").value,
+        teacher: document.querySelector("#rateTeacher").value,
+        rating: Number(document.querySelector("#rateScore").value),
+        comment: document.querySelector("#rateComment").value
+      });
+      button.disabled = false;
+      document.querySelector("#rateMsg").textContent = data.ok ? "已记下，并按课程和老师归类" : (data.error || "没有记下");
+      if (!data.ok) return;
+      document.querySelector("#rateComment").value = "";
+      await loadRatings();
+    });
+    document.querySelector("#speak").addEventListener("click", () => {
+      const replyBody = document.querySelector("#replyBody");
+      replyBody.replaceChildren();
+      if (!lastReply) replyBody.textContent = "还没有可以朗读的回答。";
+      else renderRich(replyBody, lastReply);
+      openModal("reply");
+      if (!lastReply || !window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(new SpeechSynthesisUtterance(lastReply));
+    });
+    document.querySelector("#voice").addEventListener("click", () => {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const voiceBody = document.querySelector("#voiceBody");
+      openModal("voice");
+      if (!Recognition) { voiceBody.textContent = "这个浏览器没有语音识别。"; return; }
+      voiceBody.textContent = "正在听，请说话。";
+      const recognition = new Recognition();
+      recognition.lang = "zh-CN";
+      recognition.onresult = (event) => {
+        const said = event.results[0][0].transcript;
+        voiceBody.textContent = said;
+        ask(said);
+      };
+      recognition.onerror = () => { voiceBody.textContent = "没有听清，请再点一次语音。"; };
+      recognition.start();
+    });
+
+    ensureSession().then((ready) => {
+      renderAccount();
+      if (ready) {
+        refresh();
+        loadHistory(0);
+      }
+      else addPost("assistant", "点右上角「登录」。登录会保持在这台电脑上，成功后自动导入课表。课表有变动时，再点「导入刷新」。");
+    });
+    fetch(api("/api/health")).then((response) => response.json()).then((data) => {
+      if (!data.model_configured) document.querySelector("#status").textContent = "未配置模型密钥，将直接查询已导入的课表";
+    });
+  </script>
+</body>
+</html>

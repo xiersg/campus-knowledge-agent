@@ -1,0 +1,11 @@
+﻿dist/
+build/
+.next/
+out/
+coverage/
+node_modules/
+__pycache__/
+.venv/
+venv/
+*.min.js
+*.map

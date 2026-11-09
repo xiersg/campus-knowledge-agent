@@ -1,0 +1,16 @@
+[Unit]
+Description=校园知识咨询
+After=network.target
+
+[Service]
+Type=simple
+User=campusagent
+Group=campusagent
+WorkingDirectory=/opt/campus-knowledge-agent
+ExecStart=/usr/bin/python3 -m campus_agent --host 0.0.0.0 --port 8765
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
