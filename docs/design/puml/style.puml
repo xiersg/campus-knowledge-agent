@@ -1,0 +1,25 @@
+' 校园知识咨询智能体 - 全部设计图公共样式
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam dpi 150
+skinparam ArrowColor #1D4E89
+skinparam ActorBorderColor #1D4E89
+skinparam ActorBackgroundColor #EEF4FD
+skinparam ComponentBackgroundColor #F5F8FC
+skinparam ComponentBorderColor #1D4E89
+skinparam DatabaseBorderColor #1D4E89
+skinparam PackageBackgroundColor #F0F5FB
+skinparam ClassBackgroundColor #F5F8FC
+skinparam ClassBorderColor #1D4E89
+skinparam ActivityBackgroundColor #F5F8FC
+skinparam ActivityBorderColor #1D4E89
+skinparam ActivityStartColor #2E7D32
+skinparam ActivityEndColor #C62828
+skinparam NoteBackgroundColor #FFFBEA
+skinparam SequenceBoxBackgroundColor #F0F5FB
+skinparam LifelineBorderColor #1D4E89
+skinparam ParticipantBorderColor #1D4E89
+skinparam ParticipantBackgroundColor #EEF4FD
+skinparam EntityBackgroundColor #F5F8FC
+skinparam EntityBorderColor #1D4E89

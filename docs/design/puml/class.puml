@@ -1,0 +1,104 @@
+@startuml
+!include style.puml
+title 模块类图（系统结构）
+
+class CampusServer {
+  +serve_forever()
+}
+class Handler {
+  +do_GET()
+  +do_POST()
+  -_sync_gdut()
+  -_refresh_saved()
+}
+class WebApp {
+  +start_browser_sync()
+  -_browser_sync()
+}
+class Accounts {
+  +register(student_no, password, display_name)
+  +login(student_no, password)
+  +logout(token)
+  +user_from_token(token)
+}
+class Agent {
+  +chat(session_id, user_text, mode, topic)
+  -_llm_chat()
+  -_fallback()
+  -_history() -_save() -_fold()
+}
+class ToolGateway {
+  +call_tool(name, arguments)
+}
+class McpClient {
+  +start() +call_tool() +list_tools() +close()
+}
+class McpServer {
+  +handle(message)
+  +serve()
+}
+class Tools {
+  +dispatch(name, arguments)
+  +campus_brief() +list_courses() +course_detail()
+  +upcoming_exams() +add_exam()
+  +list_reviews() +add_review()
+  +import_schedule() +load_sample_schedule()
+  +search_knowledge()
+  +add_evaluation() +list_evaluations()
+  +list_grades() +analyze_grades()
+  +recommend_courses()
+  +import_school_grades()
+}
+class Rag {
+  +tokenize(text)
+  +reindex_user(user_id)
+  +search(query, limit)
+}
+class Memory {
+  +remember(content)
+  +list_memories(limit)
+  +capture_memory(text)
+}
+class Gdut {
+  +fetch_personal_timetable(cookie, semester)
+  +fetch_personal_grades(cookie, semester)
+}
+class Bilibili {
+  +search_bilibili(keyword, limit)
+}
+class Schedule {
+  +parse_weeks(value)
+  +parse_import(content)
+  +semester_week(day, semester_start)
+  +normalize_course(record)
+}
+class BrowserLogin {
+  +capture_schedule_cookie(semester, timeout)
+}
+class Db {
+  +connect()
+  +get_meta() +set_meta()
+  +get_user_meta() +set_user_meta()
+}
+
+CampusServer -- Handler
+Handler --> WebApp
+WebApp --> Agent
+WebApp --> McpClient
+WebApp --> Accounts
+WebApp --> BrowserLogin
+Agent --> ToolGateway
+ToolGateway --> McpClient
+McpClient --> McpServer
+McpServer --> Tools
+Agent --> Rag
+Agent --> Memory
+Tools --> Db
+Tools --> Rag
+Tools --> Gdut
+Tools --> Schedule
+Tools --> Bilibili
+Memory --> Rag
+Accounts --> Db
+BrowserLogin --> Gdut
+@enduml

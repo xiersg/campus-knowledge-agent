@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>校园知识咨询智能体 · 前台应用原型（可交互演示）</title>
+<style>
+  :root{--deep:#1d4e89;--blue:#4d92f0;--light:#8ec8ff;--ink:#1d3a56;--sub:#5d7c99;--line:rgba(170,205,235,.75);}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(165deg,#f7fbff 0%,#e7f3ff 46%,#d6ebff 100%);color:var(--ink);font:13px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+  button{font:14px "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(214,234,255,.9));color:var(--deep);border:1px solid rgba(255,255,255,.95);border-radius:999px;padding:5px 14px;cursor:pointer;transition:.15s}
+  button:hover{filter:brightness(.97)}
+  button.on{background:linear-gradient(180deg,#8ec8ff,#4d92f0);color:#fff;border-color:transparent}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  input,textarea,select{border:1px solid rgba(160,200,235,.7);padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.72);color:var(--ink);width:100%;font:14px "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  /* 顶部横幅 */
+  .top{background:linear-gradient(90deg,rgba(255,255,255,.72),rgba(214,235,255,.55));color:var(--sub);padding:8px 20px;letter-spacing:.08em;font-size:12px;border-bottom:1px solid rgba(255,255,255,.8);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .top .brand{display:flex;align-items:center;gap:10px;color:var(--deep)}
+  .top .logo{font-size:24px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+  .top .logo small{display:block;color:#5aa4ef;font-size:11px;letter-spacing:.18em;font-weight:500}
+  .top .spacer{flex:1}
+  .proto-badge{background:linear-gradient(180deg,#ffd98a,#ffb84d);color:#7a4d00;font-size:11px;padding:3px 10px;border-radius:999px;font-weight:700;letter-spacing:.1em}
+  #me{font-weight:700;color:var(--deep)}
+  /* 导航 */
+  .nav{width:auto;margin:0 16px 12px;padding:8px 12px;background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(214,235,255,.45));border:1px solid rgba(255,255,255,.9);border-radius:12px;box-shadow:0 8px 24px rgba(90,150,210,.12);backdrop-filter:blur(10px)}
+  .nav a{color:var(--deep);text-decoration:none;font-weight:650;margin-right:18px;cursor:pointer;padding:4px 2px;border-bottom:2px solid transparent}
+  .nav a.active{color:var(--blue);border-bottom-color:var(--blue)}
+  /* 面板容器 */
+  #main{flex:1;display:flex;gap:12px;margin:0 16px 16px;min-height:520px}
+  .panel{background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(232,244,255,.55));border:1px solid rgba(255,255,255,.95);border-radius:14px;box-shadow:0 12px 28px rgba(80,140,200,.12);backdrop-filter:blur(12px);display:none;flex-direction:column;overflow:hidden}
+  .panel.show{display:flex}
+  #panel-sheet{flex:1.25;min-width:420px}
+  #panel-exam,#panel-eval{flex:1;min-width:420px}
+  #panel-chat{flex:1.5;min-width:380px}
+  .hd{background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(186,220,255,.85));color:var(--deep);font-weight:700;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.8);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .hd em{background:linear-gradient(180deg,#7eb6ff,#4d8ef0);color:#fff;font-style:normal;padding:0 5px;margin-right:4px;border-radius:4px;font-size:11px}
+  .pad{padding:12px;overflow:auto;flex:1}
+  /* 课表 */
+  .weekbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .weekbar h2{margin:0;font-size:18px;letter-spacing:.04em;flex:1}
+  #weekRange{color:#6d8eae;font-size:12px;width:100%}
+  table.sheet{width:100%;table-layout:fixed;background:rgba(255,255,255,.7);border-collapse:collapse}
+  table.sheet th,table.sheet td{border:1px solid var(--line);padding:2px;text-align:center;font-size:11px;vertical-align:middle;word-break:break-all}
+  table.sheet th{background:linear-gradient(180deg,#f7fbff,#d4e8ff);color:var(--deep)}
+  table.sheet td.today,table.sheet th.today{background:linear-gradient(180deg,#e7f3ff,#b9dcff)}
+  table.sheet td:first-child{background:rgba(247,251,255,.9);color:#6d8eae;width:44px}
+  button.cell{width:100%;min-height:20px;border-radius:6px;padding:2px;font-size:10.5px;white-space:normal;line-height:1.25;background:linear-gradient(180deg,#f4f9ff,#c5e0ff);color:#16324d;border:1px solid rgba(180,215,245,.6)}
+  button.cell b{display:block}
+  .room{color:#2f7de1}
+  /* 考试/成绩 */
+  .card{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.95);border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:0 4px 12px rgba(90,150,210,.08)}
+  .card .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#eef4fd;color:var(--sub)}
+  .badge.warn{background:linear-gradient(180deg,#ffd98a,#ffb84d);color:#7a4d00;font-weight:700}
+  .muted{color:#8aa4bb;font-size:12px}
+  table.list{width:100%;border-collapse:collapse;font-size:12px}
+  table.list th,table.list td{border-bottom:1px solid rgba(200,220,240,.6);padding:5px 4px;text-align:left}
+  table.list th{color:var(--deep);font-weight:700}
+  .weak{color:#c0392b;font-weight:700}.strong{color:#1e8449;font-weight:700}
+  /* 评价 */
+  .stars{display:inline-flex;gap:2px;cursor:pointer;font-size:20px;color:#d9e6f5}
+  .stars .s.on{color:#ffb84d}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid rgba(160,200,235,.7);cursor:pointer;color:var(--deep)}
+  .chip.on{background:linear-gradient(180deg,#8ec8ff,#4d92f0);color:#fff;border-color:transparent}
+  /* 咨询台 */
+  #ask{flex:1.5;min-width:380px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(168,208,250,.7));border-color:rgba(126,186,242,.9);box-shadow:0 14px 32px rgba(70,140,210,.18)}
+  #ask>.hd{background:linear-gradient(90deg,rgba(232,244,255,.95),rgba(142,196,248,.95))}
+  #log{flex:1;min-height:300px;overflow:auto;background:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.9);border-radius:12px;padding:10px;margin:12px}
+  .msg{margin-bottom:12px;display:flex;gap:8px}
+  .msg .who{font-weight:700;font-size:11px;color:var(--sub);margin-bottom:2px}
+  .msg .bubble{max-width:78%;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.92);border:1px solid rgba(180,215,245,.7);white-space:pre-wrap;word-break:break-word;box-shadow:0 3px 8px rgba(90,150,210,.1)}
+  .msg.user{flex-direction:row-reverse}
+  .msg.user .bubble{background:linear-gradient(180deg,#8ec8ff,#4d92f0);color:#fff;border-color:transparent}
+  .msg .bubble table{border-collapse:collapse;margin:6px 0;font-size:12px}
+  .msg .bubble table th,.msg .bubble table td{border:1px solid rgba(170,205,235,.75);padding:3px 8px;text-align:left}
+  .msg.user .bubble table th,.msg.user .bubble table td{border-color:rgba(255,255,255,.5)}
+  .traces{font-size:11px;color:#6d8eae;margin-top:4px}
+  .traces .t{display:inline-block;background:#eef4fd;border-radius:6px;padding:1px 7px;margin-right:6px}
+  .traces .t.ok{color:#1e8449}.traces .t.bad{color:#c0392b}
+  .typing{color:#8aa4bb;font-size:12px;padding:4px 12px;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.4}}
+  #askbar{display:flex;gap:8px;padding:0 12px 12px;align-items:center}
+  #askbar textarea{flex:1;min-height:44px;resize:none}
+  .icon-btn{width:40px;height:40px;border-radius:50%;font-size:17px;display:flex;align-items:center;justify-content:center;padding:0}
+  .icon-btn.rec{background:linear-gradient(180deg,#ff9a9a,#ff5c5c);color:#fff;animation:pulse 1.2s infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,92,92,.25)}}
+  /* 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(29,58,86,.35);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(2px)}
+  .mask.show{display:flex}
+  .dlg{width:min(520px,92vw);max-height:88vh;overflow:auto;background:linear-gradient(180deg,#ffffff,#eef6ff);border:1px solid rgba(255,255,255,.95);border-radius:16px;box-shadow:0 24px 60px rgba(40,90,150,.35);padding:18px}
+  .dlg h3{margin:0 0 12px;color:var(--deep)}
+  .dlg .fld{margin-bottom:10px}
+  .dlg .fld label{display:block;color:#3d6284;margin-bottom:3px;font-size:12px}
+  .dlg .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  .steps{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+  .steps .st{display:flex;gap:8px;align-items:center;font-size:12px;color:#8aa4bb}
+  .steps .st.done{color:#1e8449}.steps .st.cur{color:var(--deep);font-weight:700}
+  .steps .st .dot{width:14px;height:14px;border-radius:50%;background:#d9e6f5;display:inline-block;flex:none}
+  .steps .st.done .dot{background:#2ecc71}.steps .st.cur .dot{background:var(--blue);animation:pulse 1.2s infinite}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:linear-gradient(180deg,#1d4e89,#2f7de1);color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:99;display:none;box-shadow:0 10px 24px rgba(29,78,137,.4)}
+  .toast.show{display:block;animation:up .25s}
+  @keyframes up{from{transform:translate(-50%,12px);opacity:0}}
+  /* 交互标注 */
+  .tag{position:absolute;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#ff9a56,#ff6b2c);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(255,107,44,.45);z-index:40;pointer-events:none}
+  #legend{position:fixed;right:10px;bottom:10px;width:240px;background:rgba(255,255,255,.94);border:1px solid rgba(180,215,245,.8);border-radius:12px;padding:10px 12px;font-size:11.5px;color:var(--ink);z-index:45;box-shadow:0 10px 24px rgba(60,120,180,.25)}
+  #legend b{color:#ff6b2c}
+  #legend .x{float:right;cursor:pointer;color:#8aa4bb}
+  @media(max-width:900px){#main{flex-direction:column}#legend{display:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <span class="logo"><svg width="30" height="30" viewBox="0 0 240 240"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5aa4ef"/><stop offset="1" stop-color="#1d4e89"/></linearGradient></defs><rect width="240" height="240" rx="52" fill="url(#bg)"/><path d="M48 52h144a20 20 0 0 1 20 20v64a20 20 0 0 1-20 20h-84l-36 32v-32H48a20 20 0 0 1-20-20V72a20 20 0 0 1 20-20z" fill="#fff"/><g stroke="#1d4e89" stroke-width="5" stroke-linecap="round"><line x1="72" y1="84" x2="168" y2="84"/><line x1="72" y1="110" x2="168" y2="110"/><line x1="72" y1="136" x2="168" y2="136"/><line x1="94" y1="60" x2="94" y2="158"/><line x1="126" y1="60" x2="126" y2="158"/><line x1="158" y1="60" x2="158" y2="158"/></g><circle cx="196" cy="196" r="22" fill="#fff"/><path d="M186 198l8-12 10 20z" fill="#4d92f0"/></svg><span>广工资讯<small>校园知识咨询智能体</small></span></span>
+  </div>
+  <div class="spacer"></div>
+  <span class="proto-badge">原型演示 · 交互可点击</span>
+  <span id="me" style="display:none"></span>
+  <button id="btnLogin" onclick="toggleLogin()">登录 / 注册</button>
+  <span style="position:relative"><span class="tag" style="top:-6px;right:-6px">6</span><button onclick="openImport()">导入课表</button></span>
+</div>
+
+<div class="nav">
+  <a class="active" data-tab="sheet" onclick="switchTab('sheet')">本周课表</a>
+  <a data-tab="exam" onclick="switchTab('exam')">考试提醒</a>
+  <a data-tab="eval" onclick="switchTab('eval')">课程评价</a>
+  <a data-tab="chat" onclick="switchTab('chat')">咨询台</a>
+</div>
+
+<div id="main">
+  <!-- 课表看板 -->
+  <div class="panel show" id="panel-sheet" style="position:relative">
+    <span class="tag" style="top:8px;right:10px">1</span>
+    <div class="hd"><em>课表</em>本周课表<span class="muted">（点击课程格子可看详情）</span></div>
+    <div class="pad">
+      <div class="weekbar">
+        <button onclick="shiftWeek(-1)">← 上一周</button>
+        <h2 id="weekTitle">第 13 周</h2>
+        <button onclick="shiftWeek(1)">下一周 →</button>
+        <button onclick="todayCourses('今天')">今日</button>
+        <button onclick="todayCourses('明天')">明日</button>
+      </div>
+      <div id="weekRange" class="muted"></div>
+      <table class="sheet" id="sheet"></table>
+    </div>
+  </div>
+
+  <!-- 考试提醒 -->
+  <div class="panel" id="panel-exam" style="position:relative">
+    <span class="tag" style="top:8px;right:10px">2</span>
+    <div class="hd"><em>提醒</em>考试提醒与成绩</div>
+    <div class="pad">
+      <div class="card">
+        <div class="row"><b>近期考试 / 答辩</b><button class="on" onclick="openExamAdd()">+ 添加考试</button></div>
+        <div id="examList" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <div class="row"><b>我的成绩</b><button onclick="openGrade()">成绩分析</button></div>
+        <table class="list" id="gradeList" style="margin-top:8px"></table>
+        <div class="muted" style="margin-top:6px">成绩只由教务导入，系统不提供手记入口</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 课程评价 -->
+  <div class="panel" id="panel-eval" style="position:relative">
+    <span class="tag" style="top:8px;right:10px">3</span>
+    <div class="hd"><em>评价</em>课程评价</div>
+    <div class="pad">
+      <div class="card">
+        <div class="fld"><label>课程（自动联想课表课程名）</label><input id="evCourse" list="courseNames" placeholder="如：软件工程"><datalist id="courseNames"></datalist></div>
+        <div class="fld"><label>教师</label><input id="evTeacher" list="teacherNames" placeholder="如：张三"><datalist id="teacherNames"></datalist></div>
+        <div class="fld"><label>评分</label><span class="stars" id="evStars"></span></div>
+        <div class="fld"><label>评语</label><textarea id="evComment" rows="2" placeholder="这门课讲得怎么样？"></textarea></div>
+        <div class="btns" style="justify-content:flex-start"><button class="on" onclick="submitEval()">提交评价</button></div>
+      </div>
+      <div class="card">
+        <div class="chips"><span class="chip on" id="chip-course" onclick="evalView('course')">按课程</span><span class="chip" id="chip-teacher" onclick="evalView('teacher')">按教师</span></div>
+        <div id="evalList" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 咨询台 -->
+  <div class="panel show" id="panel-chat" style="position:relative;flex:1.5">
+    <span class="tag" style="top:8px;right:10px">4</span>
+    <div class="hd"><em>咨询</em>咨询台
+      <span class="chips" id="modeChips">
+        <span class="chip on" id="mode-campus" onclick="setMode('campus')">校园咨询</span>
+        <span class="chip" id="mode-knowledge" onclick="setMode('knowledge')">课程问答</span>
+      </span>
+    </div>
+    <div id="courseChips" class="chips" style="display:none;padding:8px 12px 0"></div>
+    <div id="log"></div>
+    <div id="askbar">
+      <button class="icon-btn" id="btnVoice" onclick="toggleVoice()" title="语音输入">🎤</button>
+      <textarea id="ask" rows="2" placeholder="问点什么，例如：明天有什么课？课室和老师是谁？"></textarea>
+      <button class="on" id="btnSend" onclick="sendMsg()" style="padding:8px 20px">发送</button>
+    </div>
+  </div>
+</div>
+
+<!-- 登录弹窗 -->
+<div class="mask" id="maskLogin"><div class="dlg">
+  <span class="tag" style="position:static;display:inline-block">5</span>
+  <h3 id="loginTitle">登录</h3>
+  <div class="chips" style="margin-bottom:10px"><span class="chip on" id="tab-login" onclick="loginTab('login')">登录</span><span class="chip" id="tab-reg" onclick="loginTab('reg')">注册</span></div>
+  <div class="fld"><label>学号</label><input id="lgNo" placeholder="如 3124004072"></div>
+  <div class="fld" id="fldName" style="display:none"><label>姓名</label><input id="lgName" placeholder="显示名"></div>
+  <div class="fld"><label>密码</label><input id="lgPw" type="password" placeholder="至少 8 位，含字母和数字"></div>
+  <div class="muted" id="regTip" style="display:none">密码只存哈希（PBKDF2-HMAC-SHA256），不保存明文。</div>
+  <div class="btns"><button onclick="closeMask('maskLogin')">取消</button><button class="on" onclick="doLogin()" id="btnDoLogin">登录</button></div>
+</div></div>
+
+<!-- 教务导入弹窗 -->
+<div class="mask" id="maskImport"><div class="dlg">
+  <h3>导入课表与成绩（教务）</h3>
+  <div class="card" style="background:rgba(255,255,255,.6)">
+    <div class="chips" id="impModes">
+      <span class="chip on" onclick="impMode('browser')">① 本机浏览器登录</span>
+      <span class="chip" onclick="impMode('cookie')">② 粘贴教务 Cookie</span>
+      <span class="chip" onclick="impMode('refresh')">③ 导入刷新</span>
+    </div>
+    <div id="impBody" style="margin-top:10px">
+      <div class="muted">点击开始后会在你的浏览器打开学校统一认证页，登录成功后自动抓取会话并导入课表与成绩。教务密码不保存。</div>
+    </div>
+    <div class="steps" id="impSteps"></div>
+  </div>
+  <div class="btns"><button onclick="closeMask('maskImport')">关闭</button><button class="on" id="btnImpGo" onclick="runImport()">开始导入</button></div>
+</div></div>
+
+<!-- 课程详情弹窗 -->
+<div class="mask" id="maskCourse"><div class="dlg">
+  <h3 id="courseTitle">课程详情</h3>
+  <div id="courseBody"></div>
+  <div class="btns"><button class="on" onclick="closeMask('maskCourse')">知道了</button></div>
+</div></div>
+
+<!-- 成绩分析弹窗 -->
+<div class="mask" id="maskGrade"><div class="dlg">
+  <h3>成绩百分制分析</h3>
+  <div id="gradeBody"></div>
+  <div class="btns"><button class="on" onclick="closeMask('maskGrade')">关闭</button></div>
+</div></div>
+
+<!-- 添加考试弹窗 -->
+<div class="mask" id="maskExam"><div class="dlg">
+  <h3>添加考试 / 答辩提醒</h3>
+  <div class="fld"><label>课程名</label><input id="exCourse" placeholder="如：软件工程"></div>
+  <div class="fld"><label>时间（YYYY-MM-DD HH:MM）</label><input id="exAt" placeholder="如：2026-12-28 09:00"></div>
+  <div class="fld"><label>地点</label><input id="exLoc" placeholder="如：教2-201"></div>
+  <div class="fld"><label>提前提醒天数</label><input id="exDays" type="number" value="7"></div>
+  <div class="btns"><button onclick="closeMask('maskExam')">取消</button><button class="on" onclick="doAddExam()">保存提醒</button></div>
+</div></div>
+
+<div id="legend"><span class="x" onclick="this.parentElement.style.display='none'">✕</span><b>原型交互说明</b><br>
+<b>1</b> 课表看板：可翻周、点课程看详情<br>
+<b>2</b> 考试提醒：进入提醒窗口标「该提醒了」，可手动补记考试<br>
+<b>3</b> 课程评价：1～5 星，按课程/按教师归类<br>
+<b>4</b> 咨询台：两套会话，回答附工具调用痕迹，可语音输入、朗读<br>
+<b>5</b> 登录/注册弹窗：多用户数据隔离<br>
+<b>6</b> 「导入课表」：三种教务导入方式<br>
+点击右上角「原型演示」徽标可隐藏标注
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ---------- 模拟数据 ---------- */
+const COURSES=[
+ {name:"软件工程",teacher:"张三",room:"教1-305",day:1,a:1,b:2,weeks:"1-16",content:"需求分析、UML 建模、概要设计与详细设计"},
+ {name:"数据结构",teacher:"李四",room:"教1-408",day:1,a:3,b:4,weeks:"1-16",content:"线性表、树、图、查找与排序"},
+ {name:"计算机网络",teacher:"王五",room:"教2-201",day:2,a:1,b:2,weeks:"1-16",content:"TCP/IP 协议栈、路由与交换"},
+ {name:"大学英语",teacher:"陈六",room:"语音楼302",day:2,a:7,b:8,weeks:"1-16",content:"学术英语阅读与写作"},
+ {name:"操作系统",teacher:"赵七",room:"教3-102",day:3,a:5,b:6,weeks:"1-12",content:"进程管理、内存管理、文件系统"},
+ {name:"数据库原理",teacher:"孙八",room:"教1-305",day:4,a:3,b:4,weeks:"1-16",content:"关系模型、SQL、事务与并发控制"},
+ {name:"人工智能导论",teacher:"周九",room:"教4-203",day:5,a:1,b:2,weeks:"1-16",content:"搜索、机器学习基础、神经网络"},
+ {name:"体育·羽毛球",teacher:"吴十",room:"体育馆",day:4,a:7,b:8,weeks:"1-16",content:"基本步伐与高远球"},
+];
+const EXAMS=[
+ {course:"数据结构期中",at:"2026-11-25 14:00",loc:"教1-408",note:"闭卷，带计算器",remind:7},
+ {course:"软件工程期末",at:"2026-12-28 09:00",loc:"教2-201",note:"开卷，带课程设计文档",remind:7},
+ {course:"操作系统期末",at:"2027-01-04 09:00",loc:"教3-102",note:"闭卷",remind:7},
+];
+const GRADES=[
+ {course:"软件工程",total:88.5},{course:"数据结构",total:92},{course:"计算机网络",total:76},
+ {course:"大学英语",total:83},{course:"操作系统",total:68},{course:"数据库原理",total:85},
+];
+const EVALS=[
+ {course:"软件工程",teacher:"张三",rating:5,comment:"案例丰富，把 UML 讲得很透"},
+ {course:"数据结构",teacher:"李四",rating:4,comment:"板书工整，进度稍快"},
+ {course:"大学英语",teacher:"陈六",rating:4,comment:"口语练习机会多"},
+];
+const REVIEWS={软件工程:{date:"2026-11-16",topic:"概要设计",points:"分层架构、模块划分、接口设计",q:"时序图与协作图的区别？"}};
+let WEEK_OFFSET=0, MODE="campus", TOPIC="", rating=5, loggedIn=false, voiceOn=false, busy=false;
+const today=new Date(2026,10,23,8,0); // 演示基准日：2026-11-23 周一（第 13 周）
+
+/* ---------- 工具函数 ---------- */
+const $=id=>document.getElementById(id);
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),2200);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function openMask(id){$(id).classList.add("show");}
+function closeMask(id){$(id).classList.remove("show");}
+function fmtDay(n){return ["周一","周二","周三","周四","周五","周六","周日"][n-1];}
+function dstr(offset){const d=new Date(today);d.setDate(d.getDate()+offset);return d;}
+
+/* ---------- 课表 ---------- */
+const TIMES=["08:30","09:25","10:25","11:20","14:00","14:55","16:00","16:55","19:00","19:55","20:50","21:45"];
+function weekTitle(){const monday=new Date(today);monday.setDate(monday.getDate()-((today.getDay()+6)%7)+WEEK_OFFSET*7);
+  const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+  return `第 ${13+WEEK_OFFSET} 周（${monday.getMonth()+1}月${monday.getDate()}日 - ${sunday.getMonth()+1}月${sunday.getDate()}日）`;}
+function renderSheet(){
+  $("weekTitle").textContent=`第 ${13+WEEK_OFFSET} 周`;
+  $("weekRange").textContent=weekTitle();
+  let h="<tr><th>节次</th>";
+  for(let d=1;d<=7;d++){const cls=(WEEK_OFFSET===0&&d===1)?" class='today'":"";h+=`<th${cls}>${fmtDay(d)}</th>`;}
+  h+="</tr>";
+  for(let s=1;s<=12;s++){
+    h+=`<tr><td>${s}<br><span class='muted'>${TIMES[s-1]}</span></td>`;
+    for(let d=1;d<=7;d++){
+      const cs=COURSES.filter(c=>c.day===d&&c.a<=s&&c.b>=s);
+      const cls=(WEEK_OFFSET===0&&d===1)?" class='today'":"";
+      if(s===cs[0]?.a)h+=`<td${cls} rowspan="${cs[0].b-cs[0].a+1}"><button class="cell" onclick="openCourse('${cs[0].name}')"><b>${cs[0].name}</b><span class="room">${cs[0].room}</span><br>${cs[0].teacher}</button></td>`;
+      else if(!cs.length)h+=`<td${cls}></td>`;
+    }
+    h+="</tr>";
+  }
+  $("sheet").innerHTML=h;
+}
+function shiftWeek(n){WEEK_OFFSET+=n;renderSheet();}
+function todayCourses(label){
+  const off=(label==="今天")?0:1;const d=dstr(off);const cs=COURSES.filter(c=>c.day===((d.getDay()+6)%7)+1);
+  let html=`<b>${label}（${d.getMonth()+1}月${d.getDate()}日 ${fmtDay(((d.getDay()+6)%7)+1)}）的课：</b>`;
+  if(!cs.length)html+="<div class='muted'>这一天没有课</div>";
+  html+="<table class='list'><tr><th>时间</th><th>课程</th><th>教师</th><th>课室</th></tr>";
+  cs.forEach(c=>html+=`<tr><td>${TIMES[c.a-1]}-${TIMES[c.b-1]}</td><td>${c.name}</td><td>${c.teacher}</td><td class='room'>${c.room}</td></tr>`);
+  html+="</table>";
+  $("todayDlg")?.remove();
+  const m=document.createElement("div");m.className="mask show";m.id="todayDlg";m.onclick=e=>{if(e.target===m)m.remove();};
+  m.innerHTML=`<div class="dlg">${html}<div class="btns"><button class="on" onclick="document.getElementById('todayDlg').remove()">关闭</button></div></div>`;
+  document.body.appendChild(m);
+}
+function openCourse(name){
+  const c=COURSES.find(x=>x.name===name);const r=REVIEWS[name];
+  $("courseTitle").textContent=`课程详情 · ${c.name}`;
+  $("courseBody").innerHTML=`
+    <table class="list"><tr><th>时间</th><td>${fmtDay(c.day)} 第${c.a}-${c.b}节（${TIMES[c.a-1]}-${TIMES[c.b-1]}）｜第 ${c.weeks} 周</td></tr>
+    <tr><th>教师</th><td>${c.teacher}</td></tr><tr><th>课室</th><td class="room">${c.room}</td></tr>
+    <tr><th>教学内容</th><td>${c.content}</td></tr></table>
+    ${r?`<div class="card" style="margin-top:10px"><b>最近一次课堂复盘（${r.date}）</b><div class="muted">主题：${r.topic}｜要点：${r.points}｜遗留问题：${r.q}</div></div>`:"<div class='muted'>还没有这门课的课堂复盘记录</div>"}
+    <div style="margin-top:10px"><button class="on" onclick="toTopic('${c.name}')">在「课程问答」里聊这门课</button></div>`;
+  openMask("maskCourse");
+}
+function toTopic(name){closeMask("maskCourse");MODE="knowledge";TOPIC=name;switchTab("chat");setMode("knowledge");renderCourseChips();toast(`已切换到课程问答：${name}`);}
+
+/* ---------- 考试与成绩 ---------- */
+function daysUntil(s){const d=new Date(s.replace(" ","T"));return Math.ceil((d-today)/86400000);}
+function renderExams(){
+  let h="";
+  EXAMS.forEach(e=>{
+    const n=daysUntil(e.at);const warn=n<=e.remind;
+    h+=`<div class="card"><div class="row"><div><b>${e.course}</b> <span class="muted">${e.at} ｜ ${e.loc} ｜ ${e.note}</span></div>
+    <span class="badge ${warn?"warn":""}">${warn?"该提醒了！":"还有 "+n+" 天"}</span></div></div>`;
+  });
+  $("examList").innerHTML=h;
+}
+function renderGrades(){
+  let h="<tr><th>课程</th><th>总评</th></tr>";
+  GRADES.forEach(g=>{const cls=g.total<75?"weak":(g.total>=85?"strong":"");h+=`<tr><td>${g.course}</td><td class="${cls}">${g.total}</td></tr>`;});
+  $("gradeList").innerHTML=h;
+}
+function openGrade(){
+  const avg=(GRADES.reduce((s,g)=>s+g.total,0)/GRADES.length).toFixed(1);
+  const weak=GRADES.filter(g=>g.total<75).map(g=>g.course).join("、");
+  const strong=GRADES.filter(g=>g.total>=85).map(g=>g.course).join("、");
+  $("gradeBody").innerHTML=`
+    <div class="card"><b>平均分：${avg}</b></div>
+    <div class="card">需要加强的课程（75 分以下）：<span class="weak">${weak}</span></div>
+    <div class="card">学得不错的课程（85 分以上）：<span class="strong">${strong}</span></div>
+    <div class="muted">结论：整体基础扎实，${weak}建议优先安排复习时间；${strong}可保持节奏。</div>`;
+  openMask("maskGrade");
+}
+function openExamAdd(){openMask("maskExam");}
+function doAddExam(){
+  const c=$("exCourse").value.trim(),a=$("exAt").value.trim(),l=$("exLoc").value.trim(),d=parseInt($("exDays").value)||7;
+  if(!c||!a||!l){toast("请填写课程、时间与地点");return;}
+  if(!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(a)){toast("时间格式应为 YYYY-MM-DD HH:MM");return;}
+  EXAMS.push({course:c,at:a,loc:l,note:"手动补记",remind:d});renderExams();closeMask("maskExam");toast("考试提醒已添加");
+}
+
+/* ---------- 课程评价 ---------- */
+function renderDatalists(){
+  $("courseNames").innerHTML=COURSES.map(c=>`<option value="${c.name}">`).join("");
+  $("teacherNames").innerHTML=[...new Set(COURSES.map(c=>c.teacher))].map(t=>`<option value="${t}">`).join("");
+}
+function renderStars(){
+  $("evStars").innerHTML=[1,2,3,4,5].map(i=>`<span class="s ${i<=rating?"on":""}" onclick="setStar(${i})">★</span>`).join("");
+}
+function setStar(i){rating=i;renderStars();}
+function submitEval(){
+  const c=$("evCourse").value.trim(),t=$("evTeacher").value.trim(),cm=$("evComment").value.trim();
+  if(!c||!t){toast("请填写课程与教师");return;}
+  EVALS.push({course:c,teacher:t,rating,comment:cm||"（无评语）"});renderEvals();toast("评价已提交，并进入检索索引");
+  $("evCourse").value="";$("evTeacher").value="";$("evComment").value="";
+}
+let EVAL_VIEW="course";
+function evalView(v){EVAL_VIEW=v;$("chip-course").classList.toggle("on",v==="course");$("chip-teacher").classList.toggle("on",v==="teacher");renderEvals();}
+function renderEvals(){
+  let h;
+  if(EVAL_VIEW==="course"){
+    h="<table class='list'><tr><th>课程</th><th>教师</th><th>评分</th><th>评语</th></tr>";
+    EVALS.forEach(e=>h+=`<tr><td>${e.course}</td><td>${e.teacher}</td><td>${"★".repeat(e.rating)}${"☆".repeat(5-e.rating)}</td><td>${esc(e.comment)}</td></tr>`);
+    h+="</table>";
+  }else{
+    const byT={};EVALS.forEach(e=>{(byT[e.teacher]=byT[e.teacher]||[]).push(e);});
+    h="<table class='list'><tr><th>教师</th><th>平均分</th><th>评价数</th></tr>";
+    Object.entries(byT).forEach(([t,es])=>{const avg=(es.reduce((s,e)=>s+e.rating,0)/es.length).toFixed(1);h+=`<tr><td>${t}</td><td>${avg}</td><td>${es.length}</td></tr>`;});
+    h+="</table>";
+  }
+  $("evalList").innerHTML=h;
+}
+
+/* ---------- 咨询台 ---------- */
+function switchTab(tab){
+  document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("active",a.dataset.tab===tab));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("show"));
+  $("panel-"+tab).classList.add("show");
+}
+function setMode(m){MODE=m;$("mode-campus").classList.toggle("on",m==="campus");$("mode-knowledge").classList.toggle("on",m==="knowledge");$("courseChips").style.display=m==="knowledge"?"flex":"none";renderCourseChips();}
+function renderCourseChips(){
+  $("courseChips").innerHTML=COURSES.map(c=>`<span class="chip ${TOPIC===c.name?"on":""}" onclick="pickTopic('${c.name}')">${c.name}</span>`).join("");
+}
+function pickTopic(n){TOPIC=n;renderCourseChips();toast(`当前课程问答主题：${n}`);}
+function addMsg(role,text,traces){
+  const el=document.createElement("div");el.className="msg "+role;
+  el.innerHTML=`<div><div class="who">${role==="user"?(loggedIn?"我":"访客"):"校园知识助手"}</div>
+  <div class="bubble">${renderMd(text)}</div>${traces?`<div class="traces">${traces.map(t=>`<span class="t ${t.ok?"ok":"bad"}">⚙ ${t.name}${t.ok?" ✓":" ✗"}</span>`).join("")}</div>`:""}</div>`;
+  $("log").appendChild(el);$("log").scrollTop=$("log").scrollHeight;return el;
+}
+function renderMd(s){
+  s=esc(s);
+  const lines=s.split("\n");let out="",inTable=false;
+  lines.forEach(l=>{
+    if(l.startsWith("|")){if(!inTable){out+="<table>";inTable=true;}
+      const cells=l.split("|").filter(x=>x.trim()!=="").map(x=>x.trim());
+      out+="<tr>"+cells.map(c=>`<${l.includes("---")?"th":"td"}>${c}</${l.includes("---")?"th":"td"}>`).join("")+"</tr>";
+    }else{if(inTable){out+="</table>";inTable=false;}out+="<div>"+l.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")+"</div>";}
+  });
+  if(inTable)out+="</table>";
+  return out;
+}
+function replyFor(text){
+  if(/明天|明日/.test(text))return {r:`**明天（11月24日 周二）的课：**\n| 时间 | 课程 | 教师 | 课室 |\n| --- | --- | --- | --- |\n| 08:30-10:05 | 计算机网络 | 王五 | 教2-201 |\n| 16:00-17:35 | 大学英语 | 陈六 | 语音楼302 |`,t:[{name:"list_courses",ok:true}]};
+  if(/考试|答辩/.test(text))return {r:`**未来 45 天内有 3 场考试：**\n| 考试 | 时间 | 地点 | 状态 |\n| --- | --- | --- | --- |\n| 数据结构期中 | 11-25 14:00 | 教1-408 | ⚠ 该提醒了 |\n| 软件工程期末 | 12-28 09:00 | 教2-201 | 还有 35 天 |\n| 操作系统期末 | 01-04 09:00 | 教3-102 | 还有 42 天 |`,t:[{name:"upcoming_exams",ok:true}]};
+  if(/成绩|分数|分析/.test(text))return {r:`**成绩分析：**\n平均分 **81.5**。\n需要加强（75 分以下）：**操作系统（68）**。\n学得不错（85 分以上）：**数据结构（92）、软件工程（88.5）、数据库原理（85）**。\n\n结论：整体基础扎实，操作系统建议优先安排复习。`,t:[{name:"list_grades",ok:true},{name:"analyze_grades",ok:true}]};
+  if(/复盘|讲了什么|笔记/.test(text))return {r:`**软件工程最近一次课堂复盘（11-16）：**\n- 主题：概要设计\n- 要点：分层架构、模块划分、接口设计\n- 遗留问题：时序图与协作图的区别？`,t:[{name:"list_reviews",ok:true}]};
+  if(/推荐|公开课/.test(text))return {r:`在 B 站找到与本主题相关的公开课：\n| 视频 | UP 主 | 播放量 |\n| --- | --- | --- |\n| 软件工程导论（全 12 讲） | 某高校公开课 | 8.2 万 |\n| UML 建模实战 | 架构师老王 | 1.5 万 |\n\n（课程问答模式：推荐围绕「${TOPIC||"当前课程"}」）`,t:[{name:"recommend_courses",ok:true}]};
+  return {r:`**今日简报（11月23日 周一 · 第 13 周）**\n| 时间 | 课程 | 课室 |\n| --- | --- | --- |\n| 08:30-10:05 | 软件工程 | 教1-305 |\n| 10:25-12:00 | 数据结构 | 教1-408 |\n\n考试提醒：数据结构期中（11-25）已进入提醒窗口。`,t:[{name:"campus_brief",ok:true}]};
+}
+function sendMsg(){
+  if(busy)return;
+  const text=$("ask").value.trim();if(!text)return;
+  addMsg("user",text);$("ask").value="";
+  const typing=addMsg("assistant","正在思考…");
+  busy=true;$("btnSend").disabled=true;
+  setTimeout(()=>{
+    typing.remove();
+    const q=replyFor(text);
+    if(MODE==="knowledge"){q.t.unshift({name:"search_knowledge",ok:true});q.r+="\n\n（课程问答模式：回答已限定在「"+(TOPIC||"未选课")+"」范围内，优先引用本机教学内容与复盘。）";}
+    addMsg("assistant",q.r,q.t);
+    busy=false;$("btnSend").disabled=false;
+  },900+Math.random()*600);
+}
+$("ask").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}});
+function toggleVoice(){
+  voiceOn=!voiceOn;
+  $("btnVoice").classList.toggle("rec",voiceOn);
+  $("btnVoice").textContent=voiceOn?"⏹":"🎤";
+  if(voiceOn){toast("正在聆听…（模拟语音输入，再点一次结束）");$("ask").placeholder="请说话…";}
+  else{toast("语音输入结束（浏览器 Web Speech API）");$("ask").placeholder="问点什么，例如：明天有什么课？课室和老师是谁？";}
+}
+function speakLast(){
+  const msgs=document.querySelectorAll(".msg.assistant .bubble");
+  if(msgs.length){toast("正在朗读最近一条回答…（模拟 speechSynthesis）");}
+}
+
+/* ---------- 登录 ---------- */
+let LOGIN_TAB="login";
+function openLogin(){openMask("maskLogin");}
+function toggleLogin(){
+  if(loggedIn){loggedIn=false;$("me").style.display="none";$("btnLogin").textContent="登录 / 注册";toast("已退出登录");}
+  else openLogin();
+}
+function loginTab(t){LOGIN_TAB=t;$("tab-login").classList.toggle("on",t==="login");$("tab-reg").classList.toggle("on",t==="reg");$("loginTitle").textContent=t==="login"?"登录":"注册";$("fldName").style.display=t==="reg"?"block":"none";$("regTip").style.display=t==="reg"?"block":"none";$("btnDoLogin").textContent=t==="login"?"登录":"注册";}
+function doLogin(){
+  const no=$("lgNo").value.trim(),pw=$("lgPw").value;
+  if(!no||pw.length<8){toast("学号不能为空，密码至少 8 位");return;}
+  if(LOGIN_TAB==="reg"&&!/[A-Za-z]/.test(pw)||LOGIN_TAB==="reg"&&!/\d/.test(pw)){toast("密码需同时包含字母和数字");return;}
+  loggedIn=true;
+  $("me").style.display="inline";$("me").textContent=LOGIN_TAB==="reg"?(($("lgName").value.trim()||"同学")+" · 欢迎加入"):("你好，"+(no==="sample"?"访客":(no.slice(-4)+" 同学")));
+  $("btnLogin").textContent="退出";
+  closeMask("maskLogin");toast(LOGIN_TAB==="reg"?"注册成功，密码已哈希存储":"登录成功（会话 14 天有效）");
+}
+
+/* ---------- 教务导入 ---------- */
+let IMP_MODE="browser",impRunning=false;
+function openImport(){openMask("maskImport");renderImpBody();}
+function impMode(m){IMP_MODE=m;document.querySelectorAll("#impModes .chip").forEach(c=>c.classList.remove("on"));event.target.classList.add("on");renderImpBody();}
+function renderImpBody(){
+  const b=$("impBody");
+  if(IMP_MODE==="browser")b.innerHTML="<div class='muted'>点击「开始导入」后会在你的浏览器打开学校统一认证页，登录成功后自动抓取会话并导入课表与成绩。教务密码不保存。</div>";
+  if(IMP_MODE==="cookie")b.innerHTML="<div class='fld'><label>把教务登录后的 Cookie 粘贴到这里（服务器上使用时）</label><textarea rows='3' placeholder='例如：JSESSIONID=...; route=...'></textarea></div>";
+  if(IMP_MODE==="refresh")b.innerHTML="<div class='muted'>使用上次保存的教务会话重新导入课表与成绩，无需重新登录（适合课表有变动时刷新）。</div>";
+  $("impSteps").innerHTML="";
+}
+function runImport(){
+  if(impRunning)return;impRunning=true;$("btnImpGo").disabled=true;
+  const steps=[IMP_MODE==="refresh"?"读取已保存的教务会话":(IMP_MODE==="cookie"?"校验粘贴的教务 Cookie":"打开统一认证页并等待登录"),"读取教务个人课表","读取教务成绩","写入课程与成绩（替换教务来源记录）","重建检索索引"];
+  const el=$("impSteps");el.innerHTML="";
+  steps.forEach((s,i)=>el.insertAdjacentHTML("beforeend",`<div class="st"><span class="dot"></span>${s}</div>`));
+  let i=0;
+  const tick=()=>{
+    if(i>0){el.children[i-1].classList.remove("cur");el.children[i-1].classList.add("done");}
+    if(i>=steps.length){impRunning=false;$("btnImpGo").disabled=false;toast("导入完成：8 门课、6 项成绩已更新");return;}
+    el.children[i].classList.add("cur");
+    setTimeout(tick,700+Math.random()*400);i++;
+  };
+  tick();
+}
+
+/* ---------- 初始化 ---------- */
+renderSheet();renderExams();renderGrades();renderDatalists();renderStars();renderEvals();renderCourseChips();
+addMsg("assistant","你好！我是校园知识咨询助手。\n可以问我：\n- 明天有什么课？课室和老师是谁？\n- 最近有哪些考试要提醒？\n- 分析一下我的成绩\n- 软件工程讲了什么？\n\n我的回答都来自工具查询的真实数据，绝不编造。",[{name:"campus_brief",ok:true}]);
+</script>
+</body>
+</html>

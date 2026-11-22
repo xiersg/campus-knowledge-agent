@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>校园知识咨询智能体 · 后台管理原型（可交互演示）</title>
+<style>
+  :root{--deep:#1d4e89;--blue:#4d92f0;--light:#8ec8ff;--ink:#1d3a56;--sub:#5d7c99;--line:rgba(170,205,235,.7);--ok:#1e8449;--warn:#b9770e;--bad:#c0392b;}
+  *{box-sizing:border-box}
+  body{margin:0;font:13px/1.55 "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:linear-gradient(165deg,#f7fbff 0%,#e7f3ff 46%,#d6ebff 100%);min-height:100vh}
+  button{font:13px "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(214,234,255,.9));color:var(--deep);border:1px solid rgba(255,255,255,.95);border-radius:999px;padding:5px 14px;cursor:pointer}
+  button:hover{filter:brightness(.97)}
+  button.on{background:linear-gradient(180deg,#8ec8ff,#4d92f0);color:#fff;border-color:transparent}
+  button.danger{background:linear-gradient(180deg,#ffb3b3,#ff6b6b);color:#fff}
+  button:disabled{opacity:.45}
+  input,select,textarea{border:1px solid rgba(160,200,235,.7);padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.72);color:var(--ink);width:100%;font:13px "Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  .muted{color:#8aa4bb;font-size:12px}
+  /* 登录门 */
+  #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:linear-gradient(160deg,#14365e 0%,#1d4e89 55%,#2f7de1 100%)}
+  .gate-card{width:min(400px,92vw);background:rgba(255,255,255,.97);border-radius:18px;padding:28px;box-shadow:0 30px 70px rgba(10,30,60,.5)}
+  .gate-card h2{color:var(--deep);margin:0 0 4px;font-size:20px}
+  .gate-card .muted{margin-bottom:18px}
+  .gate-card .fld{margin-bottom:12px}
+  .gate-card label{display:block;color:#3d6284;margin-bottom:4px}
+  /* 布局 */
+  #app{display:none;min-height:100vh}
+  #side{position:fixed;left:0;top:0;bottom:0;width:210px;background:linear-gradient(180deg,#163a63 0%,#1d4e89 70%,#24579a 100%);color:#cfe3fb;padding:16px 0;z-index:10}
+  #side .brand{display:flex;align-items:center;gap:8px;padding:0 16px 14px;border-bottom:1px solid rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:15px}
+  #side .menu{margin-top:10px}
+  #side .menu div{padding:11px 20px;cursor:pointer;display:flex;gap:10px;align-items:center;font-size:13.5px;border-left:3px solid transparent}
+  #side .menu div:hover{background:rgba(255,255,255,.08)}
+  #side .menu div.on{background:rgba(255,255,255,.14);border-left-color:#8ec8ff;color:#fff}
+  #side .foot{position:absolute;bottom:14px;left:16px;right:16px;font-size:11px;color:#9db8d8}
+  #body{margin-left:210px;padding:14px 20px 40px}
+  #topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  #topbar h1{margin:0;font-size:18px;color:var(--deep);flex:1}
+  .proto-badge{background:linear-gradient(180deg,#ffd98a,#ffb84d);color:#7a4d00;font-size:11px;padding:3px 10px;border-radius:999px;font-weight:700;letter-spacing:.1em}
+  .page{display:none}
+  .page.show{display:block}
+  .grid{display:grid;gap:12px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g2{grid-template-columns:1.4fr 1fr}
+  @media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(232,244,255,.6));border:1px solid rgba(255,255,255,.95);border-radius:14px;padding:14px;box-shadow:0 10px 24px rgba(80,140,200,.12)}
+  .card h3{margin:0 0 10px;font-size:14px;color:var(--deep)}
+  .stat .num{font-size:26px;font-weight:700;color:var(--deep)}
+  .stat .lab{color:var(--sub);font-size:12px}
+  .stat .delta{font-size:11px}
+  .up{color:var(--ok)}.down{color:var(--bad)}
+  table.list{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.list th,table.list td{border-bottom:1px solid rgba(200,220,240,.6);padding:7px 6px;text-align:left}
+  table.list th{color:var(--deep);font-weight:700;background:rgba(240,248,255,.6)}
+  .pill{font-size:11px;padding:2px 9px;border-radius:999px;background:#eef4fd;color:var(--sub);white-space:nowrap}
+  .pill.ok{background:#e6f7ec;color:var(--ok)}
+  .pill.warn{background:#fff3d6;color:var(--warn)}
+  .pill.bad{background:#fdeaea;color:var(--bad)}
+  .bar{height:10px;background:rgba(214,232,252,.8);border-radius:999px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,#8ec8ff,#2f7de1);border-radius:999px}
+  .chart{display:flex;align-items:flex-end;gap:14px;height:150px;padding-top:10px}
+  .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .chart .col i{width:100%;max-width:44px;background:linear-gradient(180deg,#8ec8ff,#4d92f0);border-radius:8px 8px 2px 2px;min-height:4px}
+  .chart .col span{font-size:11px;color:var(--sub)}
+  .logbox{background:#10233c;color:#9fd3a8;font:11.5px/1.7 Consolas,monospace;border-radius:10px;padding:10px;height:220px;overflow:auto;white-space:pre-wrap}
+  .logbox .t{color:#5d7c99}.logbox .w{color:#ffd98a}.logbox .e{color:#ff9a9a}
+  .fld{margin-bottom:11px}
+  .fld label{display:block;color:#3d6284;margin-bottom:4px;font-size:12px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spacer{flex:1}
+  .tag{position:absolute;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#ff9a56,#ff6b2c);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(255,107,44,.45);z-index:40;pointer-events:none}
+  .tagged{position:relative}
+  #legend{position:fixed;right:12px;bottom:12px;width:250px;background:rgba(255,255,255,.95);border:1px solid rgba(180,215,245,.8);border-radius:12px;padding:10px 12px;font-size:11.5px;z-index:45;box-shadow:0 10px 24px rgba(60,120,180,.25)}
+  #legend b{color:#ff6b2c}
+  #legend .x{float:right;cursor:pointer;color:#8aa4bb}
+  .mask{position:fixed;inset:0;background:rgba(29,58,86,.35);display:none;align-items:center;justify-content:center;z-index:50}
+  .mask.show{display:flex}
+  .dlg{width:min(480px,92vw);background:linear-gradient(180deg,#ffffff,#eef6ff);border-radius:16px;padding:18px;box-shadow:0 24px 60px rgba(40,90,150,.35)}
+  .dlg h3{margin:0 0 12px;color:var(--deep)}
+  .dlg .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:linear-gradient(180deg,#1d4e89,#2f7de1);color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;z-index:99;display:none;box-shadow:0 10px 24px rgba(29,78,137,.4)}
+  .toast.show{display:block;animation:up .25s}
+  @keyframes up{from{transform:translate(-50%,12px);opacity:0}}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:rot .8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- 管理员登录门 -->
+<div id="gate">
+  <div class="gate-card">
+    <h2>校园知识咨询 · 管理后台</h2>
+    <div class="muted">原型演示：管理员账号 admin，密码任意（≥6 位）即可进入</div>
+    <div class="fld"><label>管理员账号</label><input id="gUser" value="admin"></div>
+    <div class="fld"><label>密码</label><input id="gPw" type="password" placeholder="输入任意密码体验登录"></div>
+    <button class="on" style="width:100%;padding:9px" onclick="doGate()">登 录</button>
+    <div class="muted" style="margin-top:12px">管理员为测试机维护者角色，负责用户管理、模型配置、索引维护与服务监控。</div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="side">
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 240 240"><defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5aa4ef"/><stop offset="1" stop-color="#1d4e89"/></linearGradient></defs><rect width="240" height="240" rx="52" fill="url(#bg2)"/><path d="M48 52h144a20 20 0 0 1 20 20v64a20 20 0 0 1-20 20h-84l-36 32v-32H48a20 20 0 0 1-20-20V72a20 20 0 0 1 20-20z" fill="#fff"/><g stroke="#1d4e89" stroke-width="5" stroke-linecap="round"><line x1="72" y1="84" x2="168" y2="84"/><line x1="72" y1="110" x2="168" y2="110"/><line x1="72" y1="136" x2="168" y2="136"/><line x1="94" y1="60" x2="94" y2="158"/><line x1="126" y1="60" x2="126" y2="158"/><line x1="158" y1="60" x2="158" y2="158"/></g></svg>管理后台</div>
+    <div class="menu">
+      <div class="on" data-page="dash" onclick="go('dash')">📊 仪表盘</div>
+      <div data-page="users" onclick="go('users')">👥 用户管理</div>
+      <div data-page="model" onclick="go('model')">🤖 模型与密钥</div>
+      <div data-page="index" onclick="go('index')">🔎 检索索引</div>
+      <div data-page="monitor" onclick="go('monitor')">🖥 服务监控</div>
+      <div data-page="settings" onclick="go('settings')">⚙ 系统设置</div>
+    </div>
+    <div class="foot">测试机 8.134.98.200<br>systemd · 开机自启<br>版本 v1.0</div>
+  </div>
+
+  <div id="body">
+    <div id="topbar">
+      <h1 id="pageTitle">仪表盘</h1>
+      <span class="proto-badge">原型演示 · 交互可点击</span>
+      <span class="muted">管理员：admin</span>
+      <button onclick="logout()">退出</button>
+    </div>
+
+    <!-- 仪表盘 -->
+    <div class="page show" id="page-dash">
+      <div class="grid g4" style="margin-bottom:12px">
+        <div class="card stat tagged"><span class="tag" style="top:8px;right:8px">1</span><div class="num">23</div><div class="lab">注册用户</div><div class="delta up">▲ 本周 +5</div></div>
+        <div class="card stat"><div class="num">146</div><div class="lab">今日对话消息</div><div class="delta up">▲ 较昨日 +12%</div></div>
+        <div class="card stat"><div class="num">512</div><div class="lab">今日工具调用</div><div class="delta up">▲ 成功率 98.4%</div></div>
+        <div class="card stat"><div class="num" style="color:var(--ok)">运行中</div><div class="lab">服务状态（systemd active）</div><div class="delta up">▲ 已运行 21 天 6 小时</div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card tagged"><span class="tag" style="top:8px;right:8px">2</span><h3>近 7 日对话量</h3>
+          <div class="chart" id="weekChart"></div>
+        </div>
+        <div class="card"><h3>最近系统日志</h3>
+          <div class="logbox" id="dashLog"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户管理 -->
+    <div class="page" id="page-users">
+      <div class="card tagged"><span class="tag" style="top:8px;right:8px">3</span>
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">用户列表</h3><div class="spacer"></div>
+          <input id="userQ" style="width:220px" placeholder="按学号 / 姓名搜索" oninput="renderUsers()"><button onclick="addUser()">+ 新建用户</button></div>
+        <table class="list">
+          <thead><tr><th>ID</th><th>学号</th><th>姓名</th><th>课表数</th><th>消息数</th><th>注册时间</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="userRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 模型与密钥 -->
+    <div class="page" id="page-model">
+      <div class="grid g2">
+        <div class="card tagged"><span class="tag" style="top:8px;right:8px">4</span><h3>大模型接口配置</h3>
+          <div class="fld"><label>API Key（只存 .env，不入 Git，不展示明文）</label><input id="mKey" type="password" value="sk-••••••••••••••••"></div>
+          <div class="fld"><label>Base URL（OpenAI 兼容接口）</label><input id="mUrl" value="https://api.deepseek.com/v1"></div>
+          <div class="fld"><label>模型</label><select id="mModel"><option>deepseek-chat</option><option>deepseek-reasoner</option><option>gpt-4o-mini</option><option>其他兼容模型</option></select></div>
+          <div class="row"><button class="on" id="btnTest" onclick="testModel()">测试连接</button><button onclick="saveModel()">保存配置</button><span class="muted" id="mResult"></span></div>
+          <div class="muted" style="margin-top:10px">未配置密钥或接口不可用时，系统自动降级为关键词路由，核心查询仍可用。</div>
+        </div>
+        <div class="card"><h3>使用说明</h3>
+          <table class="list"><tr><th>参数</th><th>说明</th></tr>
+          <tr><td>对话轮数上限</td><td>模型最多 5 轮工具调用</td></tr>
+          <tr><td>历史窗口</td><td>最近 8 条、约 6000 字</td></tr>
+          <tr><td>课程问答</td><td>每门课独立会话，回答限定当前课程</td></tr>
+          <tr><td>无密钥兜底</td><td>中文关键词路由直调工具，不编造事实</td></tr></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 检索索引 -->
+    <div class="page" id="page-index">
+      <div class="card tagged"><span class="tag" style="top:8px;right:8px">5</span>
+        <div class="row" style="margin-bottom:10px"><h3 style="margin:0">BM25 检索索引状态</h3><div class="spacer"></div>
+          <button class="on" id="btnRebuild" onclick="rebuildAll()">全量重建索引</button></div>
+        <div class="bar" style="margin-bottom:6px"><i id="idxBar" style="width:0%"></i></div>
+        <div class="muted" id="idxState" style="margin-bottom:10px">索引与业务数据一致（写操作后自动重建）</div>
+        <table class="list">
+          <thead><tr><th>用户</th><th>来源</th><th>块数</th><th>最近重建</th><th>状态</th></tr></thead>
+          <tbody id="idxRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 服务监控 -->
+    <div class="page" id="page-monitor">
+      <div class="grid g4" style="margin-bottom:12px">
+        <div class="card stat"><div class="num" style="color:var(--ok)">active</div><div class="lab">campus-agent.service</div><div class="delta up">▲ 开机自启 enabled</div></div>
+        <div class="card stat"><div class="num">21 天</div><div class="lab">运行时长</div><div class="muted">上次重启：11-01 02:03（自动恢复）</div></div>
+        <div class="card stat"><div class="num">37%</div><div class="lab">CPU 使用率</div><div class="bar" style="margin-top:8px"><i style="width:37%"></i></div></div>
+        <div class="card stat"><div class="num">212 MB</div><div class="lab">内存占用（RSS）</div><div class="bar" style="margin-top:8px"><i style="width:21%"></i></div></div>
+      </div>
+      <div class="card tagged"><span class="tag" style="top:8px;right:8px">6</span><h3>服务日志（tail -f 模拟）</h3>
+        <div class="logbox" id="monLog"></div>
+      </div>
+    </div>
+
+    <!-- 系统设置 -->
+    <div class="page" id="page-settings">
+      <div class="grid g2">
+        <div class="card"><h3>学期与教学配置</h3>
+          <div class="fld"><label>学期起始日（semester_start）</label><input value="2026-09-07"></div>
+          <div class="fld"><label>学期名称（semester_name）</label><input value="2026-2027学年第一学期"></div>
+          <div class="fld"><label>会话有效期（天）</label><input type="number" value="14"></div>
+          <div class="fld"><label>消息分页大小（条/页）</label><input type="number" value="12"></div>
+          <div class="fld"><label>长期记忆上限（条）</label><input type="number" value="30"></div>
+          <div class="row"><button class="on" onclick="saveSettings()">保存设置</button></div>
+        </div>
+        <div class="card"><h3>数据备份</h3>
+          <div class="muted" style="margin-bottom:10px">SQLite 单文件 + WAL：备份即复制文件。</div>
+          <table class="list" style="margin-bottom:10px"><tr><th>项目</th><th>值</th></tr>
+          <tr><td>数据库文件</td><td>/opt/campus-knowledge-agent/data/campus.db</td></tr>
+          <tr><td>模式</td><td>WAL（读写不互斥）</td></tr>
+          <tr><td>上次备份</td><td>2026-11-22 03:00（cron 每日）</td></tr></table>
+          <button onclick="backupNow()">立即备份</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="legend"><span class="x" onclick="this.parentElement.style.display='none'">✕</span><b>后台原型交互说明</b><br>
+<b>1</b> 仪表盘：统计卡片与近 7 日对话量<br>
+<b>2</b> 系统日志实时滚动<br>
+<b>3</b> 用户管理：搜索、禁用、重置密码、删除<br>
+<b>4</b> 模型与密钥：测试连接、保存（密钥不入 Git）<br>
+<b>5</b> 检索索引：全量重建（写操作后自动重建）<br>
+<b>6</b> 服务监控：systemd 状态、资源占用、日志<br>
+管理后台为本次作业新增设计，v1.1 迭代实现
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),2400);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ---------- 登录门 ---------- */
+function doGate(){
+  const u=$("gUser").value.trim(),p=$("gPw").value;
+  if(!u||p.length<6){toast("账号不能为空，密码至少 6 位");return;}
+  $("gate").style.display="none";$("app").style.display="block";toast("管理员登录成功");
+}
+
+/* ---------- 页面切换 ---------- */
+const TITLES={dash:"仪表盘",users:"用户管理",model:"模型与密钥",index:"检索索引",monitor:"服务监控",settings:"系统设置"};
+function go(p){
+  document.querySelectorAll("#side .menu div").forEach(d=>d.classList.toggle("on",d.dataset.page===p));
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
+  $("page-"+p).classList.add("show");$("pageTitle").textContent=TITLES[p];
+}
+function logout(){$("app").style.display="none";$("gate").style.display="flex";$("gPw").value="";toast("已退出管理后台");}
+
+/* ---------- 仪表盘 ---------- */
+const DAYS=[["11-16",64],["11-17",58],["11-18",81],["11-19",73],["11-20",96],["11-21",88],["11-22",112]];
+function renderChart(){
+  const max=Math.max(...DAYS.map(d=>d[1]));
+  $("weekChart").innerHTML=DAYS.map(([d,n])=>`<div class="col"><i style="height:${Math.round(n/max*100)}%"></i><span>${d}</span></div>`).join("");
+}
+let logId=0;
+function pushLog(el,level,msg){
+  const cls=level==="w"?".w":(level==="e"?".e":".t");
+  el.insertAdjacentHTML("beforeend",`<div>${new Date(2026,10,22,20,20+Math.floor(logId/4)%4).toTimeString().slice(0,8)} <span class="${cls}">[${level.toUpperCase()}]</span> ${msg}</div>`);
+  el.scrollTop=el.scrollHeight;logId++;
+}
+function seedLogs(){
+  const el=$("dashLog");
+  pushLog(el,"i","campus-agent.service: Started 校园知识咨询智能体");
+  pushLog(el,"i","nginx: /campus/ -> 127.0.0.1:8765 转发生效");
+  pushLog(el,"i","campus-nginx-proxy.timer: 转发配置检查通过");
+  pushLog(el,"i","GET /api/health 200 (0.8ms)");
+  pushLog(el,"i","POST /api/chat 200 工具调用 list_courses ok");
+  pushLog(el,"w","教务接口响应慢：fetch_personal_grades 耗时 3.2s");
+  pushLog(el,"i","POST /api/chat 200 工具调用 analyze_grades ok");
+  pushLog(el,"i","GET /api/week?offset=0 200");
+  pushLog(el,"i","POST /api/login 200 新会话签发（14 天）");
+  pushLog(el,"i","BM25 索引重建完成：user=3，块数 118");
+}
+setInterval(()=>{pushLog($("dashLog"),Math.random()<0.12?"w":"i",["POST /api/chat 200","GET /api/overview 200","tools/call list_courses ok","tools/call campus_brief ok"][Math.floor(Math.random()*4)]);},4200);
+
+/* ---------- 用户管理 ---------- */
+let USERS=[
+ {id:1,no:"sample",name:"示例课表",n:8,m:12,at:"2026-11-08 10:00",st:"ok",label:"访客"},
+ {id:2,no:"3124004072",name:"杨富林",n:9,m:328,at:"2026-11-08 21:14",st:"ok",label:"正常"},
+ {id:3,no:"3124004060",name:"黎正阳",n:9,m:291,at:"2026-11-09 08:32",st:"ok",label:"正常"},
+ {id:4,no:"3124004101",name:"王小明",n:8,m:64,at:"2026-11-15 19:05",st:"ok",label:"正常"},
+ {id:5,no:"3124004233",name:"李小红",n:8,m:41,at:"2026-11-17 12:40",st:"ok",label:"正常"},
+ {id:6,no:"3124004318",name:"陈大勇",n:0,m:0,at:"2026-11-20 22:18",st:"off",label:"已禁用"},
+];
+function renderUsers(){
+  const q=$("userQ").value.trim();
+  $("userRows").innerHTML=USERS.filter(u=>!q||u.no.includes(q)||u.name.includes(q)).map(u=>`<tr>
+    <td>${u.id}</td><td>${u.no}</td><td>${u.name}</td><td>${u.n}</td><td>${u.m}</td><td>${u.at}</td>
+    <td><span class="pill ${u.st==="ok"?"ok":"bad"}">${u.label}</span></td>
+    <td><button onclick="opUser(${u.id},'reset')">重置密码</button>
+        <button onclick="opUser(${u.id},'toggle')">${u.st==="ok"?"禁用":"启用"}</button>
+        <button class="danger" onclick="opUser(${u.id},'del')">删除</button></td></tr>`).join("");
+}
+function opUser(id,op){
+  const u=USERS.find(x=>x.id===id);
+  if(op==="reset"){toast(`已重置 ${u.name} 的密码（需重新登录）`);}
+  if(op==="toggle"){u.st=u.st==="ok"?"off":"ok";u.label=u.st==="ok"?"正常":"已禁用";renderUsers();toast(`${u.name} 已${u.st==="ok"?"启用":"禁用"}`);}
+  if(op==="del"){if(confirm(`确定删除用户 ${u.name} 及其全部数据？`)){USERS=USERS.filter(x=>x.id!==id);renderUsers();toast("用户及其课表/对话/记忆已删除");}}
+}
+function addUser(){toast("新建用户走前台注册流程（本原型仅演示管理操作）");}
+
+/* ---------- 模型与密钥 ---------- */
+function testModel(){
+  const btn=$("btnTest");btn.disabled=true;btn.innerHTML='<span class="spin"></span>测试中…';$("mResult").textContent="";
+  setTimeout(()=>{btn.disabled=false;btn.textContent="测试连接";$("mResult").textContent="连接成功，延迟 320ms（deepseek-chat）";toast("模型接口连通");},1400);
+}
+function saveModel(){toast("配置已保存到 .env（密钥不入 Git）");}
+
+/* ---------- 检索索引 ---------- */
+const IDX=[
+ {u:"示例课表(id=1)",src:"courses/exams/reviews",n:96,at:"11-22 19:47",ok:true},
+ {u:"杨富林(2)",src:"courses/exams/reviews/evaluations/grades/memories",n:118,at:"11-22 20:12",ok:true},
+ {u:"黎正阳(3)",src:"courses/exams/reviews/evaluations/grades/memories",n:112,at:"11-22 20:08",ok:true},
+ {u:"王小明(4)",src:"courses/exams/reviews",n:88,at:"11-22 18:30",ok:true},
+];
+function renderIdx(){
+  $("idxRows").innerHTML=IDX.map(x=>`<tr><td>${x.u}</td><td>${x.src}</td><td>${x.n}</td><td>${x.at}</td><td><span class="pill ${x.ok?"ok":"warn"}">${x.ok?"正常":"重建中"}</span></td></tr>`).join("");
+}
+function rebuildAll(){
+  const btn=$("btnRebuild");btn.disabled=true;$("idxState").textContent="正在全量重建…";
+  let p=0;const bar=$("idxBar");
+  const tick=setInterval(()=>{p+=20;bar.style.width=p+"%";
+    if(p>=100){clearInterval(tick);btn.disabled=false;bar.style.width="100%";
+      $("idxState").textContent="重建完成：共 414 块，耗时 1.2s";
+      IDX.forEach(x=>{x.at="11-22 20:20";});renderIdx();toast("全部用户检索索引重建完成");}
+  },350);
+}
+
+/* ---------- 服务监控 ---------- */
+function seedMon(){
+  const el=$("monLog");
+  ["systemd: campus-agent.service active (running) 已运行 21 天",
+   "Nginx: 8088 /campus/ 反向代理 → 127.0.0.1:8765",
+   "campus-nginx-proxy.timer: 下一次检查 3 分钟后",
+   "健康检查 /api/health: ok（模型密钥已配置）",
+   "线程池: 8 active / 32 max，平均响应 12ms",
+   "SQLite WAL: 读写不阻塞，checkpoint 正常",
+  ].forEach(l=>pushLog(el,"i",l));
+}
+setInterval(()=>{pushLog($("monLog"),"i",["GET /api/chat 200 (15ms)","tools/call recommend_courses ok","GET /api/week 200 (3ms)","健康检查通过"][Math.floor(Math.random()*4)]);},3800);
+
+/* ---------- 系统设置 ---------- */
+function saveSettings(){toast("系统设置已保存（写回 meta 表）");}
+function backupNow(){toast("备份完成：campus.db → backup/campus-20261122.db");}
+
+/* ---------- 初始化 ---------- */
+if(location.hash==="#in"){$("gPw").value="prototype";doGate();}
+renderChart();renderUsers();renderIdx();seedLogs();seedMon();
+</script>
+</body>
+</html>

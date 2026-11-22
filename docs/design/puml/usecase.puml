@@ -1,0 +1,70 @@
+@startuml
+!include style.puml
+title 系统用例图
+
+left to right direction
+
+actor "学生用户" as student
+actor "访客（示例账号）" as guest
+actor "教务系统" as jxfw
+actor "大模型服务" as llm
+actor "B 站公开搜索" as bili
+actor "管理员" as admin
+
+rectangle "校园知识咨询智能体" {
+  usecase "注册 / 登录本站账号" as UC1
+  usecase "导入个人课表" as UC2
+  usecase "导入成绩" as UC3
+  usecase "导入刷新" as UC4
+  usecase "载入示例课表" as UC5
+  usecase "查询课表" as UC6
+  usecase "查看考试提醒" as UC7
+  usecase "手动添加考试" as UC8
+  usecase "记录课堂复盘" as UC9
+  usecase "查询课堂复盘" as UC10
+  usecase "提交课程评价" as UC11
+  usecase "查看成绩与分析" as UC12
+  usecase "校园咨询对话" as UC13
+  usecase "课程问答" as UC14
+  usecase "公开课推荐" as UC15
+  usecase "语音输入与朗读" as UC16
+  usecase "工具调用" as UC17
+  usecase "检索与长期记忆" as UC18
+  usecase "部署与运维" as UC19
+}
+
+student --> UC1
+student --> UC2
+student --> UC3
+student --> UC4
+student --> UC5
+student --> UC6
+student --> UC7
+student --> UC8
+student --> UC9
+student --> UC10
+student --> UC11
+student --> UC12
+student --> UC13
+student --> UC14
+student --> UC15
+student --> UC16
+guest --> UC5
+guest --> UC6
+guest --> UC13
+
+jxfw --> UC2
+jxfw --> UC3
+jxfw --> UC4
+llm --> UC17
+bili --> UC15
+admin --> UC19
+
+UC13 ..> UC17 : <<include>>
+UC14 ..> UC17 : <<include>>
+UC13 ..> UC18 : <<include>>
+UC14 ..> UC18 : <<include>>
+UC6 ..> UC18 : <<include>>
+UC12 ..> UC18 : <<include>>
+UC2 ..> UC4 : <<extend>>
+@enduml

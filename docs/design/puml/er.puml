@@ -1,0 +1,137 @@
+@startuml
+!include style.puml
+title 数据库 ER 图（概念结构设计，IE 表示法）
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+entity "用户 users" as users {
+  * id : INTEGER <<PK>>
+  --
+  * student_no : TEXT <<U>>
+  display_name : TEXT
+  password_hash : TEXT
+  salt : TEXT
+  created_at : TEXT
+}
+
+entity "会话 sessions" as sessions {
+  * token : TEXT <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  expires_at : TEXT
+}
+
+entity "用户附加数据 user_meta" as user_meta {
+  * user_id : INTEGER <<PK, FK>>
+  * key : TEXT <<PK>>
+  --
+  value : TEXT
+}
+
+entity "课程 courses" as courses {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  name : TEXT
+  teacher : TEXT
+  classroom : TEXT
+  weekday : INTEGER
+  start_time : TEXT
+  end_time : TEXT
+  weeks : TEXT
+  content : TEXT
+}
+
+entity "考试 exams" as exams {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  course_name : TEXT
+  exam_at : TEXT
+  location : TEXT
+  note : TEXT
+  remind_days : INTEGER
+}
+
+entity "课堂复盘 reviews" as reviews {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  course_name : TEXT
+  session_date : TEXT
+  topic : TEXT
+  key_points : TEXT
+  questions : TEXT
+  created_at : TEXT
+}
+
+entity "课程评价 evaluations" as evaluations {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  course_name : TEXT
+  teacher : TEXT
+  rating : INTEGER
+  comment : TEXT
+  created_at : TEXT
+}
+
+entity "成绩 grades" as grades {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  course_name : TEXT
+  title : TEXT
+  total : REAL
+  full_mark : REAL
+  detail : TEXT
+  exam_at : TEXT
+  created_at : TEXT
+}
+
+entity "对话消息 messages" as messages {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  session_id : TEXT
+  role : TEXT
+  content : TEXT
+  created_at : TEXT
+}
+
+entity "长期记忆 memories" as memories {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  content : TEXT
+  created_at : TEXT
+}
+
+entity "检索块 chunks" as chunks {
+  * id : INTEGER <<PK>>
+  --
+  user_id : INTEGER <<FK>>
+  source : TEXT
+  ref : TEXT
+  text : TEXT
+  updated_at : TEXT
+}
+
+entity "系统元数据 meta" as meta {
+  * key : TEXT <<PK>>
+  --
+  value : TEXT
+}
+
+users ||--o{ sessions : "拥有"
+users ||--o{ user_meta : "拥有"
+users ||--o{ courses : "拥有"
+users ||--o{ exams : "拥有"
+users ||--o{ reviews : "拥有"
+users ||--o{ evaluations : "拥有"
+users ||--o{ grades : "拥有"
+users ||--o{ messages : "拥有"
+users ||--o{ memories : "拥有"
+users ||--o{ chunks : "拥有"
+@enduml

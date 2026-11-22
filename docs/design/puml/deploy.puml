@@ -1,0 +1,33 @@
+@startuml
+!include style.puml
+title 系统部署图
+
+node "用户电脑" {
+  ["浏览器\n(Chrome/Edge)"] as browser
+  ["本机部署\npython -m campus_agent"] as local
+}
+
+node "公网测试机 8.134.98.200\n(Linux, systemd 开机自启)" {
+  ["Nginx 反向代理\n8088 端口 /campus/ 路径"] as nginx
+  ["campus-agent 服务\nPython 进程, 监听 8765\nRestart=always"] as app
+  ["campus-nginx-proxy.timer\n开机及每 3 分钟检查转发"] as timerjob
+  database "SQLite 数据库\n(/opt/campus-knowledge-agent/data/) " as db
+  [".env 模型密钥\n(不入 Git)"] as env
+}
+
+cloud "外部系统" {
+  ["教务系统\njxfw.gdut.edu.cn"] as gdut
+  ["B 站公开搜索"] as bili
+  ["OpenAI 兼容接口\n(DeepSeek)"] as llm
+}
+
+browser --> nginx : "http://8.134.98.200:8088/campus/"
+nginx --> app : "反向代理"
+timer ..> nginx : "检查并修复转发配置"
+app --> db : "SQLite WAL"
+app --> env : "读取密钥"
+app --> gdut : "课表/成绩接口"
+app --> bili : "公开搜索"
+app --> llm : "Chat Completions"
+local --> db : "本机数据"
+@enduml

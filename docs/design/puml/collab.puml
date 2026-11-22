@@ -1,0 +1,28 @@
+@startuml
+!include style.puml
+title 协作图：查询明天课表的对象协作与消息传递
+
+object "页面\n(index.html)" as page
+object ":Handler\n(web.py)" as h
+object ":Agent\n(agent.py)" as a
+object ":ToolGateway" as g
+object ":McpClient" as c
+object ":McpServer" as s
+object ":Tools" as t
+object ":Db" as db
+
+page -> h : 1: POST /api/chat\n「明天有什么课？」
+h -> a : 2: chat(session_id, text)
+a -> g : 3: call_tool("list_courses",\n{scope:"tomorrow"})
+g -> c : 4: 写 JSON-RPC 2.0 帧
+c -> s : 5: tools/call
+s -> t : 6: dispatch(name, arguments)
+t -> db : 7: SELECT * FROM courses\nWHERE user_id=? 并按日期匹配
+db --> t : 8: 课程行
+t --> s : 9: {"ok": true, rows: [...]}
+s --> c : 10: JSON-RPC 响应
+c --> g : 11: 工具结果
+g --> a : 12: 回填给大模型/兜底格式化
+a --> h : 13: {reply, traces}
+h --> page : 14: {"ok": true, reply}
+@enduml

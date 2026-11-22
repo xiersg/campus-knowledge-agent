@@ -1,0 +1,111 @@
+@startuml
+!include style.puml
+title 数据实体类图（ORM 映射的实体类视图）
+
+class users {
+  +int id
+  +str student_no
+  +str display_name
+  +str password_hash
+  +str salt
+  +str created_at
+}
+class sessions {
+  +str token
+  +int user_id
+  +str expires_at
+}
+class user_meta {
+  +int user_id
+  +str key
+  +str value
+}
+class courses {
+  +int id
+  +int user_id
+  +str name
+  +str teacher
+  +str classroom
+  +int weekday
+  +str start_time
+  +str end_time
+  +str weeks
+  +str content
+}
+class exams {
+  +int id
+  +int user_id
+  +str course_name
+  +str exam_at
+  +str location
+  +str note
+  +int remind_days
+}
+class reviews {
+  +int id
+  +int user_id
+  +str course_name
+  +str session_date
+  +str topic
+  +str key_points
+  +str questions
+  +str created_at
+}
+class evaluations {
+  +int id
+  +int user_id
+  +str course_name
+  +str teacher
+  +int rating
+  +str comment
+  +str created_at
+}
+class grades {
+  +int id
+  +int user_id
+  +str course_name
+  +str title
+  +float total
+  +float full_mark
+  +str detail
+  +str exam_at
+  +str created_at
+}
+class messages {
+  +int id
+  +int user_id
+  +str session_id
+  +str role
+  +str content
+  +str created_at
+}
+class memories {
+  +int id
+  +int user_id
+  +str content
+  +str created_at
+}
+class chunks {
+  +int id
+  +int user_id
+  +str source
+  +str ref
+  +str text
+  +str updated_at
+}
+class meta {
+  +str key
+  +str value
+}
+
+users "1" -- "*" sessions
+users "1" -- "*" user_meta
+users "1" -- "*" courses
+users "1" -- "*" exams
+users "1" -- "*" reviews
+users "1" -- "*" evaluations
+users "1" -- "*" grades
+users "1" -- "*" messages
+users "1" -- "*" memories
+users "1" -- "*" chunks
+@enduml

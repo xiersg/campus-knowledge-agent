@@ -1,0 +1,37 @@
+@startuml
+!include style.puml
+title 时序图：教务课表与成绩导入（本机浏览器登录方式）
+
+participant "用户" as user
+participant "前端页面" as page
+participant "WebApp\n(web.py)" as web
+participant "BrowserLogin\n(browser_login.py)" as blogin
+participant "教务系统\n(authserver/jxfw)" as jxfw
+participant "Gdut\n(gdut.py)" as gdut
+participant "Tools\n(tools.py)" as tools
+database "SQLite" as db
+
+user -> page : 点击「打开学校登录页」
+page -> web : POST /api/gdut-browser-sync
+web -> blogin : capture_schedule_cookie(semester)
+blogin -> jxfw : 打开统一认证登录页（用户本机浏览器）
+user -> jxfw : 输入账号密码完成登录
+jxfw --> blogin : 认证成功，回跳
+blogin -> jxfw : 读取会话 Cookie（DevTools 协议）
+blogin --> web : 教务 Cookie 字符串
+web -> gdut : fetch_personal_timetable(cookie, semester)
+gdut -> jxfw : 请求个人课表接口
+jxfw --> gdut : 课表数据（节次/周次/教师/课室）
+web -> gdut : fetch_personal_grades(cookie, semester)
+gdut -> jxfw : 请求成绩接口
+jxfw --> gdut : 成绩数据（总评/平时/期中/期末/绩点）
+web -> tools : import_schedule(content)
+tools -> db : INSERT INTO courses（替换导入）
+tools -> db : 重建 BM25 检索索引
+web -> tools : import_school_grades(items)
+tools -> db : INSERT INTO grades（来源 jxfw，替换官方记录）
+web -> db : 保存教务会话到 user_meta（仅服务端）
+page -> web : GET /api/gdut-browser-sync（轮询状态）
+web --> page : 导入进度与结果
+page --> user : 显示课表与成绩导入完成
+@enduml

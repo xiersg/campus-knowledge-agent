@@ -1,0 +1,38 @@
+@startuml
+!include style.puml
+title 时序图：大模型工具调用对话（重要算法模块）
+
+participant "用户/浏览器" as user
+participant "Handler\n(web.py)" as web
+participant "Agent\n(agent.py)" as agent
+participant "Memory\n(memory.py)" as mem
+participant "Rag\n(rag.py)" as rag
+participant "大模型\n(DeepSeek)" as llm
+participant "McpClient" as cli
+participant "McpServer" as srv
+participant "Tools\n(tools.py)" as tools
+database "SQLite" as db
+
+user -> web : POST /api/chat {message, mode, topic}
+web -> agent : chat(session_id, user_text, mode, topic)
+agent -> agent : 保存用户消息
+agent -> mem : capture_memory(text)
+agent -> rag : search(user_text, 4)
+rag -> db : SELECT chunks
+rag --> agent : 检索命中上下文
+agent -> llm : Chat Completions（系统提示 + 历史 + 工具声明）
+llm --> agent : tool_calls [{name, arguments}]
+agent -> cli : call_tool(name, arguments)
+cli -> srv : tools/call（JSON-RPC 2.0 帧）
+srv -> tools : dispatch(name, arguments)
+tools -> db : SELECT / INSERT（参数化 SQL）
+db --> tools : 结果集
+tools --> srv : {"ok": true, ...}
+srv --> cli : JSON-RPC 响应
+cli --> agent : 工具结果
+agent -> llm : 回填工具结果，继续（最多 5 轮）
+llm --> agent : 最终回答
+agent -> agent : 保存回答（超长会话折叠）
+agent --> web : {reply, traces}
+web --> user : {"ok": true, reply, traces}
+@enduml

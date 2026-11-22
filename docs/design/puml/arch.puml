@@ -1,0 +1,64 @@
+@startuml
+!include style.puml
+title 系统总体架构图（分层组件图）
+
+package "客户端层" {
+  ["浏览器单页前端\n(static/index.html)"] as webui
+  ["命令行入口\n(cli.py)"] as cli
+  ["外部智能体客户端\n(可选)"] as ext
+}
+
+package "表示层" {
+  ["HTTP 服务\n(web.py)"] as web
+  ["账号与会话\n(accounts.py)"] as acc
+  ["浏览器登录助手\n(browser_login.py)"] as blogin
+}
+
+package "智能体层" {
+  ["对话循环\n(agent.py)"] as agent
+  ["长期记忆\n(memory.py)"] as mem
+  ["BM25 检索\n(rag.py)"] as rag
+}
+
+package "工具层" {
+  ["MCP 客户端\n(mcp_client.py)"] as mcpcli
+  ["MCP 服务进程\n(mcp_server.py)"] as mcpsrv
+  ["业务工具\n(tools.py)"] as tools
+  ["教务接口\n(gdut.py)"] as gdut
+  ["B站推荐\n(bilibili.py)"] as bili
+  ["课表解析\n(schedule.py)"] as sched
+}
+
+package "数据层" {
+  database "SQLite\n(data/campus.db)" as db
+}
+
+cloud "外部系统" {
+  ["教务系统\njxfw.gdut.edu.cn"] as gdut_ext
+  ["B 站公开搜索"] as bili_ext
+  ["OpenAI 兼容接口\n(DeepSeek 等)"] as llm
+}
+
+webui --> web : "HTTPS + REST"
+cli --> agent
+ext --> mcpcli : "MCP stdio"
+web --> agent : "对话请求"
+web --> acc : "注册/登录"
+web --> blogin : "教务登录导入"
+blogin --> gdut
+agent --> mem
+agent --> rag
+agent --> mcpcli
+mcpcli --> mcpsrv : "stdio JSON-RPC 2.0"
+mcpsrv --> tools : "dispatch"
+tools --> gdut
+tools --> bili
+tools --> sched
+tools --> db : "SQL"
+rag --> db
+mem --> db
+acc --> db
+gdut --> gdut_ext : "HTTPS"
+bili --> bili_ext : "HTTPS"
+agent --> llm : "HTTPS\nChat Completions"
+@enduml
